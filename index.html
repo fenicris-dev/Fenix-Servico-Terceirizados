@@ -1,10 +1,20 @@
 <!--
-    Fênix Controle de Serviços Terceirizados — v3.5
+    Fênix Controle de Serviços Terceirizados — v3.6
     (antes chamado "Controle de Obras Terceirizadas" até a v1.7)
-    Migrado para o padrão do Livro das Regras Fênix v2.3.
+    Padrão: Livro das Regras Fênix v5.2 (Fênix Core v5.2). Ficha de aplicação: A,B,E,G,H,I,J
+    (A banco de dados, B login, E backup, G dashboard, H login com Google, I tempo real, J tema escuro opcional;
+    C cadastro PF/PJ, D ficha de produto e F PDF não marcados nesta versão).
     Slogan: "Cada serviço sob controle, do início ao pagamento."
 
     Changelog:
+    v3.6: migração ao Livro das Regras v5.2 e ao Fênix Core v5.2 — carregador oficial (fenixCoreReady, com
+          cópia em cache), selo "v3.6 | c <core>" (topo e rodapé), sincronia em tempo real entre aparelhos
+          (FenixCore.criarSincronia, escopo empresa; dados antigos migrados sozinhos no 1º login), login com
+          Google só com licença definitiva, recuperação de senha pelo Core, teste de 15 dias e modo somente
+          leitura, Sobre e Manual pelo Core (Changelog com datas), Preferências com tema escuro opcional,
+          Exportar meus dados e Excluir minha conta, texto escapado antes de ir para a tela (regra 64),
+          backup importado validado, perguntar antes de perder edição (regra 71), sem alert/confirm nativos,
+          código de serviço sem repetição. Nomes internos e coleções antigas mantidos (regra 55).
     v3.1: correção crítica — a regra CSS de reforço do "hidden" (fallback pra quando o Tailwind CDN
           não carrega) tinha !important e escondia pra sempre qualquer elemento que combinasse "hidden"
           com um breakpoint (ex.: "hidden md:flex", "hidden sm:inline"). Isso fazia a sidebar inteira
@@ -58,10 +68,7 @@
     [x] Core v2.3: módulos backup (lembrete 7 dias) e sobre (contador de acesso/versão) ligados
     [x] Termos de Uso / Política de Privacidade linkados (documentos reais, já publicados)
     [x] Ações destrutivas com confirmação por palavra digitada (já existia desde v1.0)
-    [ ] Carregador oficial "window.fenixCoreReady" citado na regra 2 do Core: não foi adotado nesta
-        versão porque o código desse carregador não estava disponível pra leitura real nesta migração
-        (o próprio fenix-core.js v2.3 confirma que o import direto da URL "continua funcionando").
-        Trocar depois que o arquivo do carregador puder ser conferido.
+    [x] Carregador oficial "window.fenixCoreReady" (regra 2) adotado na v3.6
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -70,8 +77,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Serviços Terceirizados | Fênix</title>
     <meta name="theme-color" content="#041273">
+    <meta name="fenix-livro" content="5.2">
+    <meta name="fenix-ficha" content="A,B,E,G,H,I,J">
+    <script>(function(){ try { var t = localStorage.getItem('fenix_tema'); if (t === 'escuro' || t === 'claro') document.documentElement.setAttribute('data-tema', t); } catch (e) {} })();</script>
     <link rel="icon" type="image/png" href="data:image/png;base64,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">    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    /* Carregador oficial do Fênix Core (regra 2 do Livro): módulo ES, online + cópia em cache para offline */
+    window.fenixCoreReady = (function () {
+      var URL_CORE = 'https://fenicris-dev.github.io/Fenix-Core/fenix-core.js';
+      var CACHE = 'fenix-core-cache';
+      function fromCache() {
+        if (!window.caches) return Promise.reject(new Error('Cache indisponível'));
+        return caches.open(CACHE)
+          .then(function (c) { return c.match(URL_CORE); })
+          .then(function (r) {
+            if (!r) throw new Error('Fênix Core indisponível: sem internet e sem cópia no cache');
+            return r.text();
+          });
+      }
+      return fetch(URL_CORE, { cache: 'no-cache' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          var copy = r.clone();
+          if (window.caches) caches.open(CACHE).then(function (c) { return c.put(URL_CORE, copy); }).catch(function () {});
+          return r.text();
+        })
+        .catch(fromCache)
+        .then(function (code) {
+          var url = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+          return import(url).then(function (mod) { window.FenixCore = mod.FenixCore; return mod.FenixCore; });
+        });
+    })();
+    </script>
     <style>
         :root{
             /* Paleta oficial Fênix (Livro das Regras v2.3) */
@@ -195,6 +233,35 @@
         .auth-alert.success{ background:rgba(0,118,206,.10); border:1px solid var(--fenix-dell); color:var(--fenix-azul); font-weight:600; }
         .auth-footer{ text-align:center; font-size:.8rem; color:var(--auth-muted); margin-top:1.1rem; }
     
+        /* ====== Tema escuro opcional (regra 60): claro é o padrão; escuro por escolha ou pelo sistema ====== */
+        .modo-leitura [data-grava]{ opacity:.45; pointer-events:none; }
+        html[data-tema="escuro"]{ --fenix-bg:#020733; --fenix-card:#041273; --fenix-texto:#ffffff; --fenix-input-txt:#ffffff; --auth-border:rgba(255,255,255,.28); --auth-muted:rgba(255,255,255,.72); --auth-track:rgba(255,255,255,.12); color-scheme:dark; }
+        html[data-tema="escuro"] .bg-white{ background:var(--fenix-card) !important; }
+        html[data-tema="escuro"] .bg-slate-50, html[data-tema="escuro"] .bg-slate-100{ background:rgba(255,255,255,.07) !important; }
+        html[data-tema="escuro"] .hover\:bg-slate-50:hover{ background:rgba(255,255,255,.12) !important; }
+        html[data-tema="escuro"] .text-slate-400, html[data-tema="escuro"] .text-slate-500, html[data-tema="escuro"] .text-slate-600, html[data-tema="escuro"] .text-slate-700, html[data-tema="escuro"] .text-slate-800{ color:rgba(255,255,255,.78) !important; }
+        html[data-tema="escuro"] .border-slate-200, html[data-tema="escuro"] .border-slate-300, html[data-tema="escuro"] .divide-y > *{ border-color:rgba(255,255,255,.2) !important; }
+        html[data-tema="escuro"] input, html[data-tema="escuro"] select, html[data-tema="escuro"] textarea{ background:#020733; color:#ffffff; }
+        html[data-tema="escuro"] input::placeholder, html[data-tema="escuro"] textarea::placeholder{ color:rgba(255,255,255,.5); }
+        html[data-tema="escuro"] .auth-input::placeholder{ color:rgba(255,255,255,.5); }
+        html[data-tema="escuro"] .auth-link{ color:var(--fenix-amarelo); }
+        html[data-tema="escuro"] .auth-alert.success{ color:var(--fenix-branco); }
+        html[data-tema="escuro"] .fx-saida-caixa{ background:#fff; color:#020733; }
+        @media (prefers-color-scheme: dark) {
+            html:not([data-tema="claro"]){ --fenix-bg:#020733; --fenix-card:#041273; --fenix-texto:#ffffff; --fenix-input-txt:#ffffff; --auth-border:rgba(255,255,255,.28); --auth-muted:rgba(255,255,255,.72); --auth-track:rgba(255,255,255,.12); color-scheme:dark; }
+        html:not([data-tema="claro"]) .bg-white{ background:var(--fenix-card) !important; }
+        html:not([data-tema="claro"]) .bg-slate-50, html:not([data-tema="claro"]) .bg-slate-100{ background:rgba(255,255,255,.07) !important; }
+        html:not([data-tema="claro"]) .hover\:bg-slate-50:hover{ background:rgba(255,255,255,.12) !important; }
+        html:not([data-tema="claro"]) .text-slate-400, html:not([data-tema="claro"]) .text-slate-500, html:not([data-tema="claro"]) .text-slate-600, html:not([data-tema="claro"]) .text-slate-700, html:not([data-tema="claro"]) .text-slate-800{ color:rgba(255,255,255,.78) !important; }
+        html:not([data-tema="claro"]) .border-slate-200, html:not([data-tema="claro"]) .border-slate-300, html:not([data-tema="claro"]) .divide-y > *{ border-color:rgba(255,255,255,.2) !important; }
+        html:not([data-tema="claro"]) input, html:not([data-tema="claro"]) select, html:not([data-tema="claro"]) textarea{ background:#020733; color:#ffffff; }
+        html:not([data-tema="claro"]) input::placeholder, html:not([data-tema="claro"]) textarea::placeholder{ color:rgba(255,255,255,.5); }
+        html:not([data-tema="claro"]) .auth-input::placeholder{ color:rgba(255,255,255,.5); }
+        html:not([data-tema="claro"]) .auth-link{ color:var(--fenix-amarelo); }
+        html:not([data-tema="claro"]) .auth-alert.success{ color:var(--fenix-branco); }
+        html:not([data-tema="claro"]) .fx-saida-caixa{ background:#fff; color:#020733; }
+        }
+        :focus-visible{ outline:3px solid var(--fenix-amarelo); outline-offset:2px; }
     </style>
 </head>
 <body class="font-sans">
@@ -257,6 +324,7 @@
                         <span class="auth-btn-text">Entrar</span>
                     </button>
 
+                    <div id="google-bloco" style="display:none;flex-direction:column;gap:1rem;">
                     <div class="auth-divider">ou continue com</div>
                     <div class="auth-socials">
                         <button type="button" class="auth-btn auth-btn-social" id="google-btn" onclick="socialLogin('Google')">
@@ -264,8 +332,9 @@
                             Google
                         </button>
                     </div>
+                    </div>
 
-                    <p class="auth-footer">Não tem conta? <a href="#" onclick="alert('Solicite acesso pelo WhatsApp (79) 9 9968-0880.'); return false;" class="auth-link">Solicitar acesso</a></p>
+                    <p class="auth-footer">Não tem conta? <a href="#" onclick="avisar('Solicite acesso pelo WhatsApp (79) 9 9968-0880.'); return false;" class="auth-link">Solicitar acesso</a></p>
                 </form>
 
                 <!-- ========== FORM: RECUPERAR SENHA ========== -->
@@ -301,7 +370,7 @@
                 </p>
             </div>
         </div>
-        <p class="text-center text-white/50 text-[10px] mt-4">Fênix Core · mesma conta do Fênix Ativos · v3.5</p>
+        <p class="text-center text-white/50 text-[10px] mt-4">Fênix Core · mesma conta do Fênix Ativos · v3.6</p>
     </div>
 </div>
 
@@ -317,13 +386,14 @@
             <div class="leading-tight">
                 <p class="text-white font-bold text-sm md:text-base flex items-center gap-2">
                     Controle de Serviços Terceirizados
-                    <a href="#" onclick="abrirModalSobre(); return false;" title="Versão instalada — clique pra ver o Changelog" id="headerVersaoBadge" class="text-white/70 text-[9px] font-bold border border-white/25 rounded-full px-1.5 py-0.5 leading-none hover:bg-white/10 hover:text-white">v3.5</a>
+                    <a href="#" onclick="abrirModalSobre(); return false;" title="Versão instalada — clique pra ver o Changelog" id="headerVersaoBadge" class="text-white/70 text-[9px] font-bold border border-white/25 rounded-full px-1.5 py-0.5 leading-none hover:bg-white/10 hover:text-white">v3.6</a>
                 </p>
                 <p class="text-white/50 text-[10px] hidden sm:block">Fênix Soluções Tecnológicas</p>
             </div>
         </div>
         <div class="flex items-center gap-3 md:gap-4">
-            <div id="statusConexaoWrap" class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1" title="Status da conexão com o Fênix Core">
+            <div id="statusConexaoWrap" role="status" aria-live="polite" class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1" title="Status da conexão com o Fênix Core">
+                <span id="statusIcone" aria-hidden="true" class="text-white text-[10px] leading-none"></span>
                 <span id="statusDot" class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span>
                 <span id="statusTexto" class="text-white/70 text-[10px] font-medium hidden sm:inline">Local</span>
                 <span id="statusFilaBadge" onclick="processarFila()" title="Itens aguardando sincronizar — clique pra tentar agora" class="hidden ml-0.5 bg-amber-400 text-slate-900 text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center cursor-pointer">0</span>
@@ -332,9 +402,13 @@
                 <button title="Menu da conta" onclick="alternarMenuConta()" class="w-9 h-9 min-w-[44px] min-h-[44px] -m-1.5 flex items-center justify-center">
                     <span id="avatarIniciais" class="w-8 h-8 rounded-full bg-white/15 border border-white/25 flex items-center justify-center text-white text-xs font-bold">?</span>
                 </button>
-                <div id="menuConta" class="hidden absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden text-sm z-50">
+                <div id="menuConta" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden text-sm z-50">
                     <p id="menuContaEmail" class="px-3 py-2 text-[11px] text-slate-400 border-b truncate"></p>
-                    <button onclick="abrirModalSobre(); alternarMenuConta();" class="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2" style="color:var(--fx-text); min-height:44px;">ℹ️ Sobre / Ajuda</button>
+                    <button onclick="abrirModalPreferencias(); alternarMenuConta();" class="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2" style="color:var(--fx-text); min-height:44px;">⚙️ Preferências</button>
+                    <button onclick="exportarDados(); alternarMenuConta();" class="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2" style="color:var(--fx-text); min-height:44px;">⬇️ Exportar meus dados</button>
+                    <button onclick="abrirModalManual(); alternarMenuConta();" class="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2" style="color:var(--fx-text); min-height:44px;">📖 Manual</button>
+                    <button onclick="abrirModalSobre(); alternarMenuConta();" class="w-full text-left px-3 py-2.5 hover:bg-slate-50 flex items-center gap-2" style="color:var(--fx-text); min-height:44px;">ℹ️ Sobre</button>
+                    <button onclick="abrirModalExcluirConta(); alternarMenuConta();" class="w-full text-left px-3 py-2.5 hover:bg-rose-50 text-rose-600 flex items-center gap-2" style="min-height:44px;">🗑️ Excluir minha conta</button>
                     <button onclick="fazerLogout()" class="w-full text-left px-3 py-2.5 hover:bg-rose-50 text-rose-600 flex items-center gap-2" style="min-height:44px;">↪ Sair</button>
                 </div>
             </div>
@@ -593,7 +667,7 @@
                 <a href="https://wa.me/5579999680880" target="_blank" class="hover:text-slate-600">&lt;Cristiano Fênix/&gt;</a>
                 &nbsp;|&nbsp;
                 <a href="https://instagram.com/fenixsolucoestecnologicas" target="_blank" class="hover:text-slate-600 font-medium">© Fênix Soluções Tecnológicas</a>
-                &nbsp;·&nbsp; v3.5
+                &nbsp;·&nbsp; <span id="seloRodape">v3.6</span>
                 &nbsp;·&nbsp; <a href="#" onclick="abrirModalSobre(); return false;" class="hover:text-slate-600 underline">Sobre</a>
             </p>
         </footer>
@@ -678,7 +752,7 @@
                 <textarea id="obraObs" class="w-full border rounded p-2 text-sm mt-1" rows="2"></textarea>
             </div>
             <div class="flex justify-end gap-2 pt-4 border-t">
-                <button type="button" onclick="fecharModalObra()" class="px-4 py-2 text-xs border rounded">Cancelar</button>
+                <button type="button" onclick="pedirFecharModalObra()" class="px-4 py-2 text-xs border rounded">Cancelar</button>
                 <button type="submit" class="px-4 py-2 text-xs fx-btn-primary rounded font-bold">Salvar Serviço</button>
             </div>
         </form>
@@ -708,7 +782,7 @@
             </div>
             <div class="flex justify-end gap-2 pt-4 border-t">
                 <button type="button" id="btnCancelarEdicaoDia" onclick="cancelarEdicaoDia()" class="hidden px-4 py-2 text-xs border rounded">Cancelar edição</button>
-                <button type="button" onclick="fecharModalDia()" class="px-4 py-2 text-xs border rounded">Fechar</button>
+                <button type="button" onclick="pedirFecharModalDia()" class="px-4 py-2 text-xs border rounded">Fechar</button>
                 <button type="submit" id="btnSalvarDia" class="px-4 py-2 text-xs fx-btn-secondary rounded font-bold">Registrar Dia</button>
             </div>
         </form>
@@ -788,7 +862,7 @@
                 <input type="text" id="editEndCliente" class="w-full border rounded p-2 text-sm mt-1">
             </div>
             <div class="flex justify-end gap-2 pt-4 border-t">
-                <button type="button" onclick="fecharModalEditarCliente()" class="px-4 py-2 text-xs border rounded">Cancelar</button>
+                <button type="button" onclick="pedirFecharModalEditarCliente()" class="px-4 py-2 text-xs border rounded">Cancelar</button>
                 <button type="submit" class="px-4 py-2 text-xs fx-btn-primary rounded font-bold">Salvar Alterações</button>
             </div>
         </form>
@@ -796,45 +870,66 @@
 </div>
 
 <!-- MODAL: SOBRE / AJUDA (Changelog + Manual, padrão Livro das Regras) -->
-<div id="modalSobre" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-[70]">
+<!-- MODAL: SOBRE (montado pelo Fênix Core: versão, acessos, Changelog com datas e PDF) -->
+<div id="modalSobre" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-[70]" role="dialog" aria-modal="true" aria-label="Sobre o app">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between px-6 pt-6 pb-3 border-b sticky top-0 bg-white">
-            <h3 class="text-lg font-bold" style="color:var(--fx-text);">Sobre o Controle de Serviços Terceirizados</h3>
-            <button type="button" onclick="fecharModalSobre()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+        <div class="flex items-center justify-between px-5 pt-2 pb-2 border-b sticky top-0 bg-white z-10">
+            <h3 class="text-base font-bold" style="color:var(--fx-text);">Sobre</h3>
+            <button type="button" onclick="fecharModalSobre()" aria-label="Fechar" class="text-slate-400 hover:text-slate-600 text-2xl leading-none min-w-[44px] min-h-[44px]">&times;</button>
         </div>
-        <div class="p-6 space-y-5 text-sm">
-            <div class="bg-slate-50 border rounded-lg p-3 grid grid-cols-2 gap-2 text-xs">
-                <div><span class="text-slate-500 block">Versão instalada</span><strong id="sobreVersao">v3.5</strong></div>
-                <div><span class="text-slate-500 block">Acessos neste aparelho</span><strong id="sobreAcessos">—</strong></div>
-                <div><span class="text-slate-500 block">Primeiro acesso</span><strong id="sobrePrimeiroAcesso">—</strong></div>
-                <div><span class="text-slate-500 block">Última atualização</span><strong id="sobreUltimaAtualizacao">—</strong></div>
-            </div>
+        <div id="areaSobre" class="p-3"></div>
+        <p class="px-5 pb-4 text-[11px] text-slate-400">
+            <a href="https://fenicris-dev.github.io/Fenix-Core/fenix-termos-de-uso.html" target="_blank" rel="noopener" class="underline">Termos de Uso</a>
+            &nbsp;·&nbsp;
+            <a href="https://fenicris-dev.github.io/Fenix-Core/fenix-politica-de-privacidade.html" target="_blank" rel="noopener" class="underline">Política de Privacidade</a>
+        </p>
+    </div>
+</div>
 
-            <div>
-                <h4 class="font-bold text-xs uppercase tracking-wide text-slate-500 mb-2">Manual rápido</h4>
-                <ul class="list-disc list-inside space-y-1 text-xs text-slate-600">
-                    <li>Em <strong>Serviços</strong>, use <strong>+ Novo Serviço</strong> pra cadastrar; clique no código do serviço pra ver/lançar os dias trabalhados.</li>
-                    <li>O botão <strong>+ Dia</strong> registra um dia de atendimento — isso é o que conta como "atendimento" nos relatórios (dias distintos, não o período corrido).</li>
-                    <li>Em <strong>Clientes</strong>, clique numa linha pra ver o histórico completo, editar ou excluir o cliente.</li>
-                    <li>A bolinha no topo mostra se você está sincronizado com o Fênix Core; se ficar amarela/vermelha, seus dados continuam salvos neste aparelho e sincronizam sozinhos quando a internet voltar.</li>
-                    <li>Use <strong>Exportar Dados</strong> no Dashboard pra baixar um backup em JSON a qualquer momento.</li>
-                </ul>
-            </div>
-
-            <div>
-                <h4 class="font-bold text-xs uppercase tracking-wide text-slate-500 mb-2">Changelog</h4>
-                <div id="sobreChangelog" class="space-y-1.5 text-xs text-slate-600 max-h-48 overflow-y-auto pr-1"></div>
-            </div>
-
-            <div class="border-t pt-4 text-[11px] text-slate-400">
-                <p>
-                    <a href="https://fenicris-dev.github.io/Fenix-Core/fenix-termos-de-uso.html" target="_blank" rel="noopener" class="underline hover:text-slate-600">Termos de Uso</a>
-                    &nbsp;·&nbsp;
-                    <a href="https://fenicris-dev.github.io/Fenix-Core/fenix-politica-de-privacidade.html" target="_blank" rel="noopener" class="underline hover:text-slate-600">Política de Privacidade</a>
-                </p>
-                <p class="mt-1">Fênix Soluções Tecnológicas · <a href="https://wa.me/5579999680880" target="_blank" class="underline hover:text-slate-600">(79) 9 9968-0880</a></p>
-            </div>
+<!-- MODAL: MANUAL -->
+<div id="modalManual" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-[70]" role="dialog" aria-modal="true" aria-label="Manual do usuário">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-5 pt-2 pb-2 border-b sticky top-0 bg-white z-10">
+            <h3 class="text-base font-bold" style="color:var(--fx-text);">Manual do usuário</h3>
+            <button type="button" onclick="fecharModalManual()" aria-label="Fechar" class="text-slate-400 hover:text-slate-600 text-2xl leading-none min-w-[44px] min-h-[44px]">&times;</button>
         </div>
+        <div id="areaManual" class="p-3"></div>
+    </div>
+</div>
+
+<!-- MODAL: PREFERÊNCIAS -->
+<div id="modalPreferencias" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-[70]" role="dialog" aria-modal="true" aria-label="Preferências">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-5 pt-2 pb-2 border-b sticky top-0 bg-white z-10">
+            <h3 class="text-base font-bold" style="color:var(--fx-text);">Preferências</h3>
+            <button type="button" onclick="fecharModalPreferencias()" aria-label="Fechar" class="text-slate-400 hover:text-slate-600 text-2xl leading-none min-w-[44px] min-h-[44px]">&times;</button>
+        </div>
+        <div id="areaPreferencias" class="p-3"></div>
+    </div>
+</div>
+
+<!-- MODAL: EXCLUIR MINHA CONTA (regra 67) -->
+<div id="modalExcluirConta" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-[80]" role="dialog" aria-modal="true" aria-labelledby="tituloExcluirConta">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-5">
+        <h3 id="tituloExcluirConta" class="text-base font-bold text-rose-600 mb-2">Excluir minha conta</h3>
+        <p class="text-xs text-slate-600 mb-2">Isto apaga o <strong>seu acesso</strong> (login). Os serviços e clientes da empresa <strong>continuam</strong> na empresa. Esta ação não pode ser desfeita.</p>
+        <button type="button" onclick="exportarDados()" class="w-full mb-3 px-3 py-2 text-xs border rounded font-semibold" style="min-height:44px;">⬇️ Baixar um backup antes</button>
+        <form id="formExcluirConta" onsubmit="confirmarExclusaoConta(event)" class="space-y-3">
+            <div id="blocoSenhaExcluir">
+                <label for="excluirContaSenha" class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">Sua senha</label>
+                <input type="password" id="excluirContaSenha" autocomplete="current-password" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" style="min-height:44px;">
+            </div>
+            <p id="avisoExcluirGoogle" class="hidden text-xs text-amber-700">Sua conta entra com o Google e não tem senha neste app. Para excluir o acesso, fale com a Fênix pelo WhatsApp (79) 9 9968-0880.</p>
+            <div>
+                <label for="excluirContaPalavra" class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">Digite APAGAR para confirmar</label>
+                <input type="text" id="excluirContaPalavra" autocomplete="off" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" style="min-height:44px;">
+            </div>
+            <p id="erroExcluirConta" class="hidden text-xs font-semibold text-rose-600" role="alert"></p>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="fecharModalExcluirConta()" class="px-4 py-2 text-xs border rounded" style="min-height:44px;">Cancelar</button>
+                <button type="submit" id="btnExcluirConta" class="px-4 py-2 text-xs bg-rose-600 text-white rounded font-bold" style="min-height:44px;">Excluir minha conta</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -861,7 +956,7 @@
 </div>
 
 <script>
-    const FENIX_CORE_URL = 'https://fenicris-dev.github.io/Fenix-Core/fenix-core.js'; // v2.3 — endereço fixo, sem versão no nome (regra do Livro das Regras)
+    const FENIX_BANCO_ATIVO = true; // regra 1: banco de dados Firebase ativo (grupo A da Ficha)
     const NOME_APP = 'fenix-obras-terceirizadas';
 
     // CLIENTES BASE PADRÃO (seed inicial — só é enviado ao Firestore se a empresa ainda não tiver nenhum)
@@ -885,15 +980,13 @@
     // ===================== FÊNIX CORE (Auth + Empresa + Firestore) =====================
     let FenixCore = null;
     let fbApp = null, fbDb = null;
-    let fbAuthSDK = null; // { getAuth, sendPasswordResetEmail } — SDK oficial do Firebase, mesma versão usada pelo fenix-core.js (10.12.2)
     let fenixAuthMod = null, fenixEmpresasMod = null;
-    let obrasModule = null, clientesModule = null;
     let empresaAtual = null;
     let coreDisponivel = false;
     let usuarioAtualFirebase = null;
     let vinculoUsuarioAtual = null;
     let infoSobreApp = null;
-    const VERSAO_APP = 'v3.5';
+    const VERSAO_APP = 'v3.6';
 
     function atualizarStatusConexao(estado) {
         const dot = document.getElementById('statusDot');
@@ -901,11 +994,14 @@
         const wrap = document.getElementById('statusConexaoWrap');
         if (!dot || !texto || !wrap) return;
         const mapa = {
-            conectado: { cor: 'bg-emerald-400', label: 'Firebase', pulse: '', title: 'Conectado ao Fênix Core — dados sincronizados na nuvem' },
-            sincronizando: { cor: 'bg-amber-400', label: 'Sincronizando...', pulse: ' animate-pulse', title: 'Sincronizando com o Fênix Core...' },
-            offline: { cor: 'bg-rose-400', label: 'Local', pulse: '', title: 'Sem conexão com o Fênix Core — trabalhando só com os dados salvos neste aparelho' }
+            conectado: { cor: 'bg-emerald-400', icone: '✓', label: 'Sincronizado', pulse: '', title: 'Conectado ao Fênix Core — dados sincronizados na nuvem' },
+            sincronizando: { cor: 'bg-amber-400', icone: '⟳', label: 'Sincronizando...', pulse: ' animate-pulse', title: 'Sincronizando com o Fênix Core...' },
+            offline: { cor: 'bg-rose-400', icone: '⏸', label: 'Sem conexão', pulse: '', title: 'Sem conexão com o Fênix Core — trabalhando só com os dados salvos neste aparelho; envia sozinho quando a internet voltar' },
+            erro: { cor: 'bg-rose-500', icone: '⚠', label: 'Erro', pulse: '', title: 'Erro ao sincronizar com o Fênix Core — toque no número ao lado para tentar de novo' }
         };
         const s = mapa[estado] || mapa.offline;
+        const ic = document.getElementById('statusIcone');
+        if (ic) ic.innerText = s.icone;
         dot.className = 'w-2 h-2 rounded-full shrink-0 ' + s.cor + s.pulse;
         texto.innerText = s.label;
         wrap.title = s.title;
@@ -929,41 +1025,25 @@
         atualizarStatusConexao('conectado');
     }
 
-    // Import dinâmico (script principal continua clássico, não-module, pra não quebrar os onclick="")
+    // Core pelo carregador oficial (regra 2): window.fenixCoreReady, com cópia em cache para uso offline
     async function carregarFenixCore() {
         try {
-            const modulo = await Promise.race([
-                import(FENIX_CORE_URL),
+            FenixCore = await Promise.race([
+                window.fenixCoreReady,
                 new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
             ]);
-            FenixCore = modulo.FenixCore;
-            const { app, db } = FenixCore.initFirebase();
+            FenixCore.init(NOME_APP);
+            const { app, db } = FenixCore.initFirebaseComCache();
             fbApp = app; fbDb = db;
             fenixAuthMod = FenixCore.criarModuloAuth(fbApp);
             fenixEmpresasMod = FenixCore.criarModuloEmpresas(fbDb);
+            try { FenixCore.preferencias.aplicar(); } catch (e) {}
             coreDisponivel = true;
-
-            // SDK de Auth puro, só pra recuperação de senha (sendPasswordResetEmail não é
-            // exposto pelo criarModuloAuth do Core). Reaproveita o MESMO app Firebase que o
-            // Core já inicializou — não cria uma segunda conexão.
-            try {
-                const authSdkMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
-                fbAuthSDK = {
-                    getAuth: authSdkMod.getAuth,
-                    sendPasswordResetEmail: authSdkMod.sendPasswordResetEmail,
-                    GoogleAuthProvider: authSdkMod.GoogleAuthProvider,
-                    signInWithPopup: authSdkMod.signInWithPopup
-                };
-            } catch (errAuthSdk) {
-                console.error('Falha ao carregar SDK de recuperação de senha:', errAuthSdk);
-                fbAuthSDK = null;
-            }
-
             return true;
         } catch (err) {
             console.error('Falha ao carregar Fênix Core:', err);
             coreDisponivel = false;
-            mostrarBannerErro('⚠️ Sem conexão com o Fênix Core — trabalhando offline com os dados salvos neste aparelho.');
+            mostrarBannerErro('⚠️ Sem conexão com o Fênix Core — abra o app com internet pelo menos uma vez neste aparelho.');
             return false;
         }
     }
@@ -974,18 +1054,49 @@
         document.getElementById('telaSplash').classList.add('hidden');
 
         if (!ok) {
-            // Sem Core: fallback local, mesmo comportamento antigo (offline puro)
             mostrarTelaLogin();
             return;
         }
 
+        // Voltando do redirecionamento do Google (PWA no celular): confirma a licença antes de entrar
+        try {
+            const volta = await fenixAuthMod.resultadoRedirecionamento();
+            if (volta) {
+                aguardandoGoogle = true;
+                const liberado = await FenixCore.licenca.confirmarAposGoogle(fbDb, fenixAuthMod, volta, NOME_APP);
+                aguardandoGoogle = false;
+                if (!liberado) {
+                    mostrarTelaLogin();
+                    showAlert('login-alert', FenixCore.licenca.MENSAGEM_GOOGLE, 'error');
+                }
+            }
+        } catch (e) { aguardandoGoogle = false; console.error(e); }
+
+        atualizarBotaoGoogle();
         fenixAuthMod.aoMudarEstado(async (user) => {
+            if (aguardandoGoogle) return;
             if (user) {
                 await autenticarEEntrar(user);
             } else {
+                pararSincronia();
                 mostrarTelaLogin();
             }
         });
+    }
+
+    // Botão "Entrar com Google" só aparece com a licença definitiva (regras 56 e 58)
+    let aguardandoGoogle = false;
+    async function atualizarBotaoGoogle() {
+        const bloco = $('google-bloco');
+        if (!bloco) return;
+        const mostrar = (sim) => { bloco.style.display = sim ? 'flex' : 'none'; };
+        if (!coreDisponivel) { mostrar(false); return; }
+        try { mostrar(FenixCore.licenca.lembrada(NOME_APP)); } catch (e) { mostrar(false); }
+        const email = ($('login-email').value || '').trim();
+        try {
+            const sim = await FenixCore.licenca.liberaGoogle(fbDb, { app: NOME_APP, email: validateEmail(email) ? email : undefined });
+            mostrar(!!sim);
+        } catch (e) { /* mantém o que o aparelho lembra */ }
     }
 
     function mostrarTelaLogin() {
@@ -1070,11 +1181,11 @@
         fieldError('forgot-email-err', false); markInput('forgot-email', false);
         if (!validateEmail(email)) { fieldError('forgot-email-err', true); markInput('forgot-email', true); return; }
 
-        if (!fbAuthSDK) { showAlert('forgot-alert', 'Sem conexão com o Fênix Core no momento. Tente novamente em instantes.', 'error'); return; }
+        if (!coreDisponivel) { showAlert('forgot-alert', 'Sem conexão com o Fênix Core no momento. Tente novamente em instantes.', 'error'); return; }
 
         setLoading('forgot-btn', true);
         try {
-            await fbAuthSDK.sendPasswordResetEmail(fbAuthSDK.getAuth(fbApp), email);
+            await fenixAuthMod.recuperarSenha(email);
             showAlert('forgot-alert', 'Link enviado! Confira seu e-mail (inclusive a caixa de spam).', 'success');
         } catch (err) {
             console.error(err);
@@ -1086,45 +1197,54 @@
 
     async function socialLogin(provider) {
         if (provider !== 'Google') return;
-        if (!fbAuthSDK || !fbAuthSDK.GoogleAuthProvider || !fbAuthSDK.signInWithPopup) {
-            showAlert('login-alert', 'Login com Google indisponível no momento. Use e-mail e senha.', 'error');
+        if (!coreDisponivel) {
+            showAlert('login-alert', 'Sem conexão com o Fênix Core no momento. Use e-mail e senha.', 'error');
             return;
         }
         const btn = $('google-btn');
         btn.disabled = true;
+        aguardandoGoogle = true;
         try {
-            const resultado = await fbAuthSDK.signInWithPopup(fbAuthSDK.getAuth(fbApp), new fbAuthSDK.GoogleAuthProvider());
+            const user = await fenixAuthMod.entrarComGoogle();
+            if (!user) return; // caiu no redirecionamento: o resultado é tratado ao reabrir o app
+            const liberado = await FenixCore.licenca.confirmarAposGoogle(fbDb, fenixAuthMod, user, NOME_APP);
+            aguardandoGoogle = false;
+            if (!liberado) {
+                showAlert('login-alert', FenixCore.licenca.MENSAGEM_GOOGLE, 'error');
+                return;
+            }
             const tela = document.getElementById('telaLogin');
             tela.classList.add('hidden');
             tela.classList.remove('flex');
-            await autenticarEEntrar(resultado.user);
+            await autenticarEEntrar(user);
         } catch (err) {
             console.error(err);
-            if (err.code !== 'auth/popup-closed-by-user') {
+            if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
                 showAlert('login-alert', 'Falha ao entrar com Google. Código: ' + (err.code || 'desconhecido'), 'error');
             }
         } finally {
+            aguardandoGoogle = false;
             btn.disabled = false;
         }
     }
 
-    async function autenticarEEntrar(user) {
+    async function executarEntrada(user) {
         usuarioAtualFirebase = user;
         try {
             const vinculo = await fenixEmpresasMod.obterEmpresaDoUsuario(user.uid);
             if (!vinculo || !vinculo.empresaId) {
-                alert('Esta conta ainda não está vinculada a nenhuma empresa no Fênix. Fale com o administrador.');
                 await fenixAuthMod.sair();
                 mostrarTelaLogin();
+                showAlert('login-alert', 'Esta conta ainda não está vinculada a nenhuma empresa no Fênix. Fale com o administrador.', 'error');
                 return;
             }
             vinculoUsuarioAtual = vinculo;
             empresaAtual = vinculo.empresaId;
-            obrasModule = FenixCore.criarModuloCatalogoEmpresa(fbDb, empresaAtual, 'obras_terceirizadas', 'id');
-            clientesModule = FenixCore.criarModuloCatalogoEmpresa(fbDb, empresaAtual, 'clientes_terceirizados', 'id');
             prepararAvatarConta(user, vinculo);
             atualizarStatusConexao('sincronizando');
-            await hidratarDadosRemotos();
+            await carregarLicencaDoUsuario(user);
+            await migrarDadosLegados();
+            iniciarSincronia();
             entrarNoApp();
             if (!vinculo.onboardingConcluido) abrirModalOnboarding(vinculo);
         } catch (err) {
@@ -1135,171 +1255,241 @@
         }
     }
 
-    // ===================== FILA DE RETRY (offline-first de verdade) =====================
-    // Toda gravação que falhar por falta de conexão fica registrada aqui (localStorage),
-    // e é reenviada automaticamente assim que a internet voltar ou no próximo login —
-    // sem isso, uma edição feita offline podia se perder ao ser sobrescrita pelos dados
-    // da nuvem na próxima hidratação.
-    const CHAVE_FILA = 'servicos_terceirizados_fila_sync';
+    // evita entrada em duplicidade (o login e o aoMudarEstado disparam juntos)
+    let promessaEntrada = null, uidEntrada = null;
+    function autenticarEEntrar(user) {
+        if (promessaEntrada && uidEntrada === user.uid) return promessaEntrada;
+        uidEntrada = user.uid;
+        promessaEntrada = executarEntrada(user);
+        return promessaEntrada;
+    }
+
+    // ===================== SINCRONIA EM TEMPO REAL (regra 57, grupo I da Ficha) =====================
+    // FenixCore.criarSincronia, escopo "empresa": cada serviço e cada cliente vira um documento em
+    // empresas/{empresaId}/<NOME_APP>_sync. Funciona offline (fila no aparelho), vale a alteração mais
+    // recente por registro e a exclusão vale em todos os aparelhos. Os dados locais continuam nas MESMAS
+    // chaves de antes (obras_terceirizadas / clientes_terceirizados) e as coleções antigas do Firestore
+    // (obras_terceirizadas / clientes_terceirizados) são só lidas, uma vez, na migração da v3.6.
+    const CHAVE_FILA = 'servicos_terceirizados_fila_sync'; // fila da v2.0–v3.5: só lida na migração
+    const CHAVE_MIGRACAO_SYNC = 'servicos_terceirizados_sync_v36';
+    let syncObras = null, syncClientes = null;
+    let estadoSyncObras = 'sincronizado', estadoSyncClientes = 'sincronizado';
 
     function lerFila() {
         try { return JSON.parse(localStorage.getItem(CHAVE_FILA)) || []; }
-        catch { return []; }
+        catch (e) { return []; }
     }
-    function gravarFila(fila) {
-        localStorage.setItem(CHAVE_FILA, JSON.stringify(fila));
+
+    function lerListaLocal(chave) {
+        try { const a = JSON.parse(localStorage.getItem(chave)); return Array.isArray(a) ? a : []; }
+        catch (e) { return []; }
     }
-    // tipo: 'salvarObra' | 'excluirObra' | 'salvarCliente' | 'excluirCliente'. chave identifica
-    // o registro (id da obra/cliente) — uma nova entrada substitui qualquer pendência antiga do
-    // mesmo registro, pra não reenviar versões velhas fora de ordem.
-    function adicionarNaFila(tipo, chave, payload) {
-        const fila = lerFila().filter(item => !(item.tipo === tipo && item.chave === chave));
-        fila.push({ tipo, chave, payload, tentativas: 0 });
-        gravarFila(fila);
-        atualizarBadgeFila();
-    }
-    function removerDaFila(tipo, chave) {
-        gravarFila(lerFila().filter(item => !(item.tipo === tipo && item.chave === chave)));
-        atualizarBadgeFila();
-    }
+
     function atualizarBadgeFila() {
-        const n = lerFila().length;
+        const n = (syncObras ? syncObras.pendentes() : 0) + (syncClientes ? syncClientes.pendentes() : 0);
         const badge = document.getElementById('statusFilaBadge');
-        if (badge) badge.classList.toggle('hidden', n === 0);
-        if (badge) badge.innerText = n;
+        if (!badge) return;
+        badge.classList.toggle('hidden', n === 0);
+        badge.innerText = n;
     }
-    let processandoFila = false;
-    async function processarFila() {
-        if (processandoFila || !coreDisponivel || !obrasModule || !clientesModule) return;
-        processandoFila = true;
-        const fila = lerFila();
-        for (const item of fila) {
-            try {
-                if (item.tipo === 'salvarObra') await obrasModule.salvar(item.payload);
-                else if (item.tipo === 'excluirObra') await obrasModule.excluir(item.chave);
-                else if (item.tipo === 'salvarCliente') await clientesModule.salvar(item.payload);
-                else if (item.tipo === 'excluirCliente') await clientesModule.excluir(item.chave);
-                removerDaFila(item.tipo, item.chave);
-            } catch (err) {
-                console.error('Falha ao reenviar item da fila:', item, err);
-                // Para no primeiro que falhar — provavelmente ainda offline, tenta de novo depois
-                break;
-            }
-        }
-        processandoFila = false;
-        if (lerFila().length === 0) esconderBannerErro();
-    }
-    window.addEventListener('online', processarFila);
 
-    async function hidratarDadosRemotos() {
+    function recalcularEstadoSync() {
+        const e = [estadoSyncObras, estadoSyncClientes];
+        let est = 'conectado';
+        if (e.includes('erro')) est = 'erro';
+        else if (e.includes('offline')) est = 'offline';
+        else if (e.includes('sincronizando')) est = 'sincronizando';
+        atualizarStatusConexao(est);
+        atualizarBadgeFila();
+    }
+
+    function processarFila() { // clique no selo amarelo do header: tenta enviar agora
+        if (syncObras) syncObras.forcarSincronia();
+        if (syncClientes) syncClientes.forcarSincronia();
+    }
+
+    function redesenharTelaAtual() {
         try {
-            // Primeiro empurra qualquer pendência local (de uma sessão offline anterior)
-            // antes de puxar o retrato da nuvem, pra não perder edição nenhuma.
-            await processarFila();
+            carregarFiltroClientes();
+            carregarObras();
+            renderizarDashboard();
+            if (viewAtual === 'clientes') renderizarTabelaClientes();
+        } catch (e) { console.error(e); }
+    }
 
-            const [obrasRemotas, clientesRemotos] = await Promise.all([
-                obrasModule.listar(),
-                clientesModule.listar()
-            ]);
+    // Junta o que está salvo no aparelho com o que a versão antiga guardava no Firestore.
+    // Pendências da fila antiga e itens só locais vencem; exclusões pendentes são respeitadas.
+    function mesclarLegado(locais, remotos, pendentes, excluidos) {
+        const mapa = new Map();
+        remotos.forEach(r => { if (r && r.id != null && !excluidos.has(String(r.id))) mapa.set(String(r.id), r); });
+        locais.forEach(l => {
+            if (!l || l.id == null || excluidos.has(String(l.id))) return;
+            const id = String(l.id);
+            if (pendentes.has(id) || !mapa.has(id)) mapa.set(id, l);
+        });
+        return Array.from(mapa.values());
+    }
 
-            if (clientesRemotos.length > 0) {
-                clientes = clientesRemotos;
-            } else if (clientes.length === 0) {
-                // Primeira vez desta empresa no app: semeia a base padrão e sobe pro Firestore
-                clientes = clientesPadrao;
-                await Promise.all(clientes.map(c => clientesModule.salvar(c)));
-            }
-
-            if (obrasRemotas.length > 0 || obras.length === 0) {
-                obras = obrasRemotas;
-            } else {
-                // Havia obras só no localStorage (versão offline anterior): sobe pro Firestore uma vez
-                await Promise.all(obras.map(o => obrasModule.salvar(o)));
-            }
-
-            localStorage.setItem('clientes_terceirizados', JSON.stringify(clientes));
-            localStorage.setItem('obras_terceirizadas', JSON.stringify(obras));
-            esconderBannerErro();
+    async function migrarDadosLegados() {
+        const marca = CHAVE_MIGRACAO_SYNC + ':' + empresaAtual;
+        try { if (localStorage.getItem(marca)) return; } catch (e) { return; }
+        const modObras = FenixCore.criarModuloCatalogoEmpresa(fbDb, empresaAtual, 'obras_terceirizadas', 'id');
+        const modClientes = FenixCore.criarModuloCatalogoEmpresa(fbDb, empresaAtual, 'clientes_terceirizados', 'id');
+        let obrasRemotas, clientesRemotos;
+        try {
+            [obrasRemotas, clientesRemotos] = await Promise.all([modObras.listar(), modClientes.listar()]);
         } catch (err) {
-            console.error('Falha ao sincronizar com o Firestore:', err);
-            mostrarBannerErro('⚠️ Falha ao sincronizar com o Fênix Core (' + (err.code || err.message || err) + ').');
+            console.warn('Migração v3.6 adiada (sem conexão):', err);
+            return; // tenta de novo no próximo login
         }
+        const fila = lerFila();
+        const conj = (tipo) => new Set(fila.filter(i => i.tipo === tipo).map(i => String(i.chave)));
+        obras = mesclarLegado(lerListaLocal('obras_terceirizadas'), obrasRemotas, conj('salvarObra'), conj('excluirObra'));
+        let novosClientes = mesclarLegado(lerListaLocal('clientes_terceirizados'), clientesRemotos, conj('salvarCliente'), conj('excluirCliente'));
+        if (novosClientes.length === 0) novosClientes = clientesPadrao.slice(); // 1ª vez da empresa
+        clientes = novosClientes;
+        localStorage.setItem('obras_terceirizadas', JSON.stringify(obras));
+        localStorage.setItem('clientes_terceirizados', JSON.stringify(clientes));
+        localStorage.setItem(marca, new Date().toISOString());
+        try { localStorage.removeItem(CHAVE_FILA); } catch (e) {}
     }
 
-    // Push individual pro Firestore a cada alteração (write-through). Se falhar — geralmente
-    // por estar offline — a mudança entra na fila de retry e é reenviada sozinha depois;
-    // nunca bloqueia o uso local, os dados continuam salvos no localStorage normalmente.
-    async function sincronizarObraRemota(obra) {
-        if (!coreDisponivel || !obrasModule) { adicionarNaFila('salvarObra', obra.id, obra); return; }
-        try { await obrasModule.salvar(obra); removerDaFila('salvarObra', obra.id); esconderBannerErro(); }
-        catch (err) {
-            console.error(err);
-            adicionarNaFila('salvarObra', obra.id, obra);
-            mostrarBannerErro('⚠️ Sem conexão — esta obra está salva neste aparelho e será sincronizada assim que a internet voltar.');
-        }
-    }
-    async function excluirObraRemota(obraId) {
-        if (!coreDisponivel || !obrasModule) { adicionarNaFila('excluirObra', obraId, null); return; }
-        try { await obrasModule.excluir(obraId); removerDaFila('excluirObra', obraId); esconderBannerErro(); }
-        catch (err) {
-            console.error(err);
-            adicionarNaFila('excluirObra', obraId, null);
-            mostrarBannerErro('⚠️ Sem conexão — a exclusão será aplicada no Fênix Core assim que a internet voltar.');
-        }
-    }
-    async function sincronizarClienteRemoto(cliente) {
-        if (!coreDisponivel || !clientesModule) { adicionarNaFila('salvarCliente', cliente.id, cliente); return; }
-        try { await clientesModule.salvar(cliente); removerDaFila('salvarCliente', cliente.id); esconderBannerErro(); }
-        catch (err) {
-            console.error(err);
-            adicionarNaFila('salvarCliente', cliente.id, cliente);
-            mostrarBannerErro('⚠️ Sem conexão — este cliente está salvo neste aparelho e será sincronizado assim que a internet voltar.');
-        }
-    }
-    async function excluirClienteRemota(clienteId) {
-        if (!coreDisponivel || !clientesModule) { adicionarNaFila('excluirCliente', clienteId, null); return; }
-        try { await clientesModule.excluir(clienteId); removerDaFila('excluirCliente', clienteId); esconderBannerErro(); }
-        catch (err) {
-            console.error(err);
-            adicionarNaFila('excluirCliente', clienteId, null);
-            mostrarBannerErro('⚠️ Sem conexão — a exclusão deste cliente será aplicada no Fênix Core assim que a internet voltar.');
-        }
+    function iniciarSincronia() {
+        pararSincronia();
+        const base = { escopo: 'empresa', empresaId: empresaAtual, nomeApp: NOME_APP, campoId: 'id' };
+        syncObras = FenixCore.criarSincronia(fbDb, Object.assign({}, base, {
+            tabela: 'obras',
+            lerLocal: () => lerListaLocal('obras_terceirizadas'),
+            gravarLocal: (arr) => localStorage.setItem('obras_terceirizadas', JSON.stringify(arr)),
+            aoMudar: (arr, info) => { obras = arr; if (info && info.origem === 'nuvem') redesenharTelaAtual(); atualizarBadgeFila(); },
+            aoMudarEstado: (est) => { estadoSyncObras = est; recalcularEstadoSync(); }
+        }));
+        syncClientes = FenixCore.criarSincronia(fbDb, Object.assign({}, base, {
+            tabela: 'clientes',
+            lerLocal: () => lerListaLocal('clientes_terceirizados'),
+            gravarLocal: (arr) => localStorage.setItem('clientes_terceirizados', JSON.stringify(arr)),
+            aoMudar: (arr, info) => { clientes = arr; if (info && info.origem === 'nuvem') redesenharTelaAtual(); atualizarBadgeFila(); },
+            aoMudarEstado: (est) => { estadoSyncClientes = est; recalcularEstadoSync(); }
+        }));
+        syncObras.iniciar();
+        syncClientes.iniciar();
     }
 
-    function fazerLogout() {
-        if (!confirm('Deseja sair?')) return;
+    function pararSincronia() {
+        try { if (syncObras) syncObras.parar(); } catch (e) {}
+        try { if (syncClientes) syncClientes.parar(); } catch (e) {}
+        syncObras = null; syncClientes = null;
+        estadoSyncObras = 'sincronizado'; estadoSyncClientes = 'sincronizado';
+    }
+
+    // Toda gravação já foi feita no aparelho pelo chamador; aqui só avisamos se a nuvem recusar.
+    function tratarGravacao(promessa) {
+        return Promise.resolve(promessa).catch(err => {
+            console.error(err);
+            if (err && err.codigo === 'FENIX_SOMENTE_LEITURA') avisar(mensagemSomenteLeitura(), 'erro');
+        });
+    }
+    function sincronizarObraRemota(obra) { return syncObras ? tratarGravacao(syncObras.salvar(obra)) : Promise.resolve(); }
+    function excluirObraRemota(id) { return syncObras ? tratarGravacao(syncObras.excluir(id)) : Promise.resolve(); }
+    function sincronizarClienteRemoto(cliente) { return syncClientes ? tratarGravacao(syncClientes.salvar(cliente)) : Promise.resolve(); }
+    function excluirClienteRemota(id) { return syncClientes ? tratarGravacao(syncClientes.excluir(id)) : Promise.resolve(); }
+
+    // ===================== LICENÇA / MODO SOMENTE LEITURA (regra 62) =====================
+    function mensagemSomenteLeitura() {
+        try {
+            const m = FenixCore.licenca.mensagem(FenixCore.licenca.acessoAtual());
+            if (m) return m;
+        } catch (e) {}
+        return 'O período de teste terminou: o app está em modo somente leitura. Fale com a Fênix para adquirir a licença.';
+    }
+    function somenteLeitura() { // true = bloqueia a gravação (e avisa)
+        try {
+            if (coreDisponivel && FenixCore && FenixCore.licenca && !FenixCore.licenca.podeGravar()) {
+                avisar(mensagemSomenteLeitura(), 'erro');
+                return true;
+            }
+        } catch (e) {}
+        return false;
+    }
+    async function carregarLicencaDoUsuario(user) {
+        try {
+            await FenixCore.licenca.carregar(fbDb, user.uid);
+            document.body.classList.toggle('modo-leitura', !FenixCore.licenca.podeGravar());
+        } catch (e) { console.error('Licença:', e); }
+    }
+
+    // ===================== AVISOS (sem alert nativo) =====================
+    function avisar(msg, tipo) {
+        let el = document.getElementById('toastFenix');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'toastFenix';
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
+            el.className = 'no-print';
+            el.style.cssText = 'position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:300;max-width:90vw;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(2,7,51,.3);';
+            document.body.appendChild(el);
+        }
+        el.textContent = msg;
+        el.style.background = tipo === 'erro' ? '#ffcb00' : '#041273';
+        el.style.color = tipo === 'erro' ? '#020733' : '#ffffff';
+        el.style.display = 'block';
+        clearTimeout(el._t);
+        el._t = setTimeout(() => { el.style.display = 'none'; }, 6000);
+    }
+
+    function esc(v) { // regra 64: todo texto digitado pelo usuário é escapado antes de ir para o HTML
+        return (FenixCore && FenixCore.seguranca)
+            ? FenixCore.seguranca.escaparHTML(v)
+            : String(v == null ? '' : v).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+    }
+    const ID_SEGURO = /^[A-Za-z0-9_.\-]+$/;
+
+    async function fazerLogout() {
+        document.getElementById('menuConta').classList.add('hidden');
+        const sair = await FenixCore.saida.confirmar('Deseja sair da sua conta?', { textoSair: 'Sair', textoFicar: 'Continuar no app' });
+        if (!sair) return;
+        pararSincronia();
+        promessaEntrada = null; uidEntrada = null;
         if (coreDisponivel && fenixAuthMod) {
-            fenixAuthMod.sair();
+            try { await fenixAuthMod.sair(); } catch (e) { console.error(e); }
         }
         empresaAtual = null;
-        obrasModule = null;
-        clientesModule = null;
         usuarioAtualFirebase = null;
         vinculoUsuarioAtual = null;
-        document.getElementById('menuConta').classList.add('hidden');
+        document.body.classList.remove('modo-leitura');
         mostrarTelaLogin();
         switchTab('login');
     }
 
     function entrarNoApp() {
         document.getElementById('appRoot').classList.remove('hidden');
-        document.getElementById('headerVersaoBadge').innerText = VERSAO_APP;
+        document.getElementById('headerVersaoBadge').innerText = (FenixCore && FenixCore.versoes) ? FenixCore.versoes.selo('3.6') : VERSAO_APP;
         salvarLocalStorage();
         atualizarBadgeFila();
         mudarView('dashboard');
         const elAno = document.getElementById('footerAno');
         if (elAno) elAno.innerText = new Date().getFullYear();
 
-        // Tela "Sobre" (contador de acesso) e lembrete de backup — Fênix Core v2.3
         if (coreDisponivel && FenixCore) {
             try { infoSobreApp = FenixCore.sobre.registrarAcesso(NOME_APP, VERSAO_APP); }
             catch (e) { console.error('FenixCore.sobre:', e); }
+            try { FenixCore.versoes.montarSelo('#seloRodape', '3.6', { coreMinimo: '5.2', livro: '5.2' }); }
+            catch (e) { console.error('FenixCore.versoes:', e); }
             try {
                 FenixCore.backup.verificarLembrete(NOME_APP, {
                     aoFazerBackup: () => { exportarDados(); return true; }
                 });
             } catch (e) { console.error('FenixCore.backup:', e); }
+            // Regra 71: edição em andamento não se perde por Voltar, recarregar ou fechar a aba
+            if (!protecaoTela) {
+                protecaoTela = FenixCore.saida.proteger({ temAlteracoes: temEdicaoEmAndamento });
+            }
         }
+    }
+    let protecaoTela = null;
+    function temEdicaoEmAndamento() {
+        return [guardaObra, guardaDia, guardaCliente].some(g => g && g.ativo && g.form.tem());
     }
 
     // ===================== AVATAR / MENU DA CONTA =====================
@@ -1319,38 +1509,213 @@
         }
     });
 
-    // ===================== MODAL SOBRE / AJUDA =====================
-    const CHANGELOG_SOBRE = [
-        ['v3.0', 'Migração pro padrão do Livro das Regras: identidade visual oficial, login com recuperação de senha real, onboarding de primeiro acesso, Fênix Core v2.3, avatar com menu, tela de Sobre.'],
-        ['v3.1', 'Correção crítica: regra CSS de reforço do "hidden" escondia pra sempre a sidebar (Serviços, Clientes, Relatórios, + Novo Serviço) em qualquer resolução. Corrigido.'],
-        ['v3.2', 'Versão visível no header; gerenciador de Dias de Atendimento com editar/excluir por dia (antes só dava pra adicionar).'],
-        ['v3.3', 'Novo ícone oficial do app (favicon + header), substituindo o ícone genérico anterior.'],
-        ['v3.4', 'Correção: ícone oficial trocado pelo ícone correto deste app (o da v3.3 era de outro app Fênix).'],
-        ['v3.5', 'Cards do Dashboard clicáveis — levam direto pra lista de Serviços já filtrada. Novo filtro de Status na tela de Serviços.'],
-        ['v2.1', 'Coluna "Atendimentos" (dias distintos trabalhados) na lista de clientes; clicar num cliente abre o histórico com Editar/Excluir.'],
-        ['v2.0', 'Renomeado para "Controle de Serviços Terceirizados"; fila de retry offline persistente, reenvio automático ao reconectar.'],
-        ['v1.2', 'Dashboard com contadores de status; integração real com o Fênix Core (login, empresa, Firestore).'],
-        ['v1.1', 'Status de pagamento por obra (Pendente/Parcial/Pago).'],
-        ['v1.0', 'Padronização visual Fênix (header, sidebar, cores, rodapé).']
+    // Changelog (regra 13): datas das versões antigas aproximadas pelo histórico das conversas
+    const CHANGELOG_APP = [
+        {
+            "versao": "3.6",
+            "criadaEm": "2026-11-05",
+            "modificadaEm": "2026-11-05",
+            "mudancas": [
+                "Padrão do Livro das Regras v5.2 e do Fênix Core v5.2. Ficha de aplicação: A (banco de dados), B (login), E (backup), G (dashboard), H (login com Google), I (tempo real em mais de um aparelho) e J (tema escuro opcional); C, D e F não marcados nesta versão.",
+                "Fênix Core pelo carregador oficial (com cópia em cache, abre offline) e selo de versões \"v3.6 | c <core>\" no topo e no rodapé.",
+                "Sincronia em tempo real entre aparelhos (serviços e clientes), com fila offline do Core, última alteração vence e exclusão valendo em todos os aparelhos. Os dados antigos são trazidos automaticamente no primeiro login.",
+                "Login com Google (só com a licença definitiva), recuperação de senha pelo Core, teste de 15 dias e modo somente leitura (licença).",
+                "Tela Sobre e Manual do usuário pelo Core (Changelog com datas e PDF); Preferências (som, animações reduzidas e tema claro/escuro/automático); Exportar meus dados e Excluir minha conta.",
+                "Segurança: todo texto digitado é escapado antes de aparecer na tela; backups importados são validados.",
+                "Regra 71: perguntar antes de perder o que está sendo editado (serviço, dia, cliente), no Voltar do celular e ao sair da conta; sem alert/confirm do navegador.",
+                "Código de serviço novo nunca repete um código já existente. Tema escuro nas telas do app."
+            ]
+        },
+        {
+            "versao": "3.5",
+            "criadaEm": "2026-10-09",
+            "modificadaEm": "2026-10-09",
+            "mudancas": [
+                "Cards do Dashboard clicáveis levam direto à lista de Serviços já filtrada; novo filtro de Status."
+            ]
+        },
+        {
+            "versao": "3.4",
+            "criadaEm": "2026-10-09",
+            "modificadaEm": "2026-10-09",
+            "mudancas": [
+                "Ícone oficial corrigido: o ícone próprio do Controle de Serviços Terceirizados."
+            ]
+        },
+        {
+            "versao": "3.3",
+            "criadaEm": "2026-10-09",
+            "modificadaEm": "2026-10-09",
+            "mudancas": [
+                "Novo ícone do app no favicon e no topo (depois corrigido na v3.4)."
+            ]
+        },
+        {
+            "versao": "3.2",
+            "criadaEm": "2026-10-09",
+            "modificadaEm": "2026-10-09",
+            "mudancas": [
+                "Versão visível no topo; gerenciador de Dias de Atendimento com editar e excluir por dia."
+            ]
+        },
+        {
+            "versao": "3.1",
+            "criadaEm": "2026-10-09",
+            "modificadaEm": "2026-10-09",
+            "mudancas": [
+                "Correção crítica: o menu lateral (Serviços, Clientes, Relatórios, + Novo Serviço) sumia em qualquer tela."
+            ]
+        },
+        {
+            "versao": "3.0",
+            "criadaEm": "2026-10-08",
+            "modificadaEm": "2026-10-08",
+            "mudancas": [
+                "Migração ao Livro das Regras v2.3: identidade visual oficial, login com recuperação de senha, onboarding, Core v2.3, avatar com menu e tela Sobre."
+            ]
+        },
+        {
+            "versao": "2.1",
+            "criadaEm": "2026-10-07",
+            "modificadaEm": "2026-10-07",
+            "mudancas": [
+                "Atendimentos (dias distintos trabalhados) na lista de clientes e nos relatórios; histórico do cliente com Editar e Excluir."
+            ]
+        },
+        {
+            "versao": "2.0",
+            "criadaEm": "2026-10-07",
+            "modificadaEm": "2026-10-07",
+            "mudancas": [
+                "Renomeado para \"Controle de Serviços Terceirizados\"; fila de retry offline persistente."
+            ]
+        },
+        {
+            "versao": "1.9",
+            "criadaEm": "2026-09-30",
+            "modificadaEm": "2026-09-30",
+            "mudancas": [
+                "Endereço definitivo do Fênix Core."
+            ]
+        },
+        {
+            "versao": "1.8",
+            "criadaEm": "2026-09-30",
+            "modificadaEm": "2026-09-30",
+            "mudancas": [
+                "Novo nome e slogan: \"Cada serviço sob controle, do início ao pagamento.\""
+            ]
+        },
+        {
+            "versao": "1.3",
+            "criadaEm": "2026-09-29",
+            "modificadaEm": "2026-09-29",
+            "mudancas": [
+                "Mensagens de erro mostram o código real; indicador de conexão no topo; sem botões duplicados de backup."
+            ]
+        },
+        {
+            "versao": "1.2",
+            "criadaEm": "2026-08-24",
+            "modificadaEm": "2026-08-24",
+            "mudancas": [
+                "Dashboard com contadores de status; integração real com o Fênix Core (login, empresa, Firestore)."
+            ]
+        },
+        {
+            "versao": "1.1",
+            "criadaEm": "2026-08-23",
+            "modificadaEm": "2026-08-23",
+            "mudancas": [
+                "Status de pagamento por serviço (Pendente, Parcial, Pago)."
+            ]
+        },
+        {
+            "versao": "1.0",
+            "criadaEm": "2026-08-23",
+            "modificadaEm": "2026-08-23",
+            "mudancas": [
+                "Padronização visual Fênix (topo, menu, cores, rodapé)."
+            ]
+        }
     ];
+    const MANUAL_MD = "# Controle de Serviços Terceirizados\n\nCada serviço sob controle, do início ao pagamento.\n\n## Primeiros passos\n1. Entre com o seu **e-mail e senha** (ou com o Google, se a sua licença for definitiva).\n2. No primeiro acesso, informe o seu primeiro nome e, se quiser, o CNPJ.\n3. O ponto colorido no topo mostra a conexão: verde = sincronizado, amarelo = sincronizando, vermelho = sem conexão (tudo continua salvo neste aparelho).\n\n## Serviços\n- Toque em **+ Novo Serviço** para cadastrar contratante, cliente, local, escopo, datas e valores.\n- Toque no código do serviço para ver o relatório; em **Dias** você lança cada dia de atendimento.\n- **Atendimentos** = quantidade de dias distintos trabalhados, não o período corrido entre início e fim.\n- **Status** alterna Em Andamento, Concluído e Interrompido.\n- O pagamento pode ser Pendente, Parcial (com valor pago) ou Pago; o saldo devedor é calculado sozinho.\n\n## Clientes\n- Toque em um cliente para ver o histórico, **Editar** ou **Excluir**. Para excluir é preciso digitar APAGAR.\n- Mudar o nome do cliente atualiza os serviços já lançados para ele.\n\n## Dashboard\n- Os cartões de contagem são clicáveis: levam direto à lista de serviços filtrada por aquele número.\n\n## Mais de um aparelho\n- Quem entra com a mesma empresa em outro aparelho vê as mudanças na hora. Se dois aparelhos mudarem o mesmo registro, vale a alteração mais recente.\n- Sem internet você continua trabalhando; ao voltar a conexão, tudo é enviado sozinho.\n\n## Seus dados\n- **Exportar meus dados** baixa um backup em JSON; **Importar** restaura um backup.\n- Em **Preferências** você escolhe som, animações reduzidas e o tema claro, escuro ou automático.\n- **Excluir minha conta** apaga o seu acesso. Os serviços e clientes da empresa continuam na empresa.\n\n## Licença\n- O teste dura 15 dias. Depois dele o app abre em **somente leitura** (você consulta, mas não altera) até a licença ser adquirida.\n- Dúvidas: WhatsApp (79) 9 9968-0880.\n";
+
+    // ===================== SOBRE / MANUAL / PREFERÊNCIAS / EXCLUIR CONTA =====================
+
+    function abrirOverlay(id) { const m = document.getElementById(id); m.classList.remove('hidden'); m.classList.add('flex'); }
+    function fecharOverlay(id) { const m = document.getElementById(id); m.classList.add('hidden'); m.classList.remove('flex'); }
+
     function abrirModalSobre() {
-        document.getElementById('sobreVersao').innerText = VERSAO_APP;
-        document.getElementById('headerVersaoBadge').innerText = VERSAO_APP;
-        const info = infoSobreApp || (FenixCore && FenixCore.sobre ? FenixCore.sobre.obter(NOME_APP) : null);
-        document.getElementById('sobreAcessos').innerText = info ? info.acessos : '—';
-        document.getElementById('sobrePrimeiroAcesso').innerText = info ? info.primeiroAcessoTexto : '—';
-        document.getElementById('sobreUltimaAtualizacao').innerText = info ? info.ultimaAtualizacaoTexto : '—';
-        document.getElementById('sobreChangelog').innerHTML = CHANGELOG_SOBRE.map(([v, texto]) =>
-            `<p><strong style="color:var(--fx-blue);">${v}</strong> — ${texto}</p>`
-        ).join('');
-        const modal = document.getElementById('modalSobre');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        if (coreDisponivel && FenixCore) {
+            try {
+                FenixCore.sobre.montarTela('#areaSobre', {
+                    nomeApp: NOME_APP, titulo: 'Controle de Serviços Terceirizados', versao: '3.6',
+                    changelog: CHANGELOG_APP, livro: '5.2', coreMinimo: '5.2'
+                });
+            } catch (e) { console.error('sobre.montarTela:', e); }
+        } else {
+            document.getElementById('areaSobre').innerText = 'Versão ' + VERSAO_APP + '. Abra o app com internet para ver o Changelog completo.';
+        }
+        abrirOverlay('modalSobre');
     }
-    function fecharModalSobre() {
-        const modal = document.getElementById('modalSobre');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+    function fecharModalSobre() { fecharOverlay('modalSobre'); }
+
+    function abrirModalManual() {
+        if (coreDisponivel && FenixCore) {
+            try {
+                FenixCore.manual.montarTela('#areaManual', MANUAL_MD, { nomeApp: NOME_APP, versao: '3.6', titulo: 'Controle de Serviços Terceirizados' });
+            } catch (e) { console.error('manual.montarTela:', e); }
+        } else {
+            document.getElementById('areaManual').innerText = 'Abra o app com internet para ver o manual.';
+        }
+        abrirOverlay('modalManual');
+    }
+    function fecharModalManual() { fecharOverlay('modalManual'); }
+
+    function abrirModalPreferencias() {
+        try { FenixCore.preferencias.montarTela('#areaPreferencias'); } catch (e) { console.error('preferencias.montarTela:', e); }
+        abrirOverlay('modalPreferencias');
+    }
+    function fecharModalPreferencias() { fecharOverlay('modalPreferencias'); }
+
+    function abrirModalExcluirConta() {
+        document.getElementById('formExcluirConta').reset();
+        const erro = document.getElementById('erroExcluirConta');
+        erro.classList.add('hidden');
+        const temSenha = !!(usuarioAtualFirebase && (usuarioAtualFirebase.providerData || []).some(p => p.providerId === 'password'));
+        document.getElementById('blocoSenhaExcluir').style.display = temSenha ? '' : 'none';
+        document.getElementById('avisoExcluirGoogle').classList.toggle('hidden', temSenha);
+        document.getElementById('btnExcluirConta').disabled = !temSenha;
+        abrirOverlay('modalExcluirConta');
+    }
+    function fecharModalExcluirConta() { fecharOverlay('modalExcluirConta'); }
+
+    async function confirmarExclusaoConta(e) {
+        e.preventDefault();
+        const erro = document.getElementById('erroExcluirConta');
+        erro.classList.add('hidden');
+        if (document.getElementById('excluirContaPalavra').value.trim() !== 'APAGAR') {
+            erro.textContent = 'Digite APAGAR (em maiúsculas) para confirmar.';
+            erro.classList.remove('hidden');
+            return;
+        }
+        try {
+            pararSincronia();
+            await fenixAuthMod.excluirConta(document.getElementById('excluirContaSenha').value);
+            // dados guardados neste aparelho
+            ['obras_terceirizadas', 'clientes_terceirizados', 'servicos_terceirizados_fila_sync'].forEach(k => { try { localStorage.removeItem(k); } catch (x) {} });
+            obras = []; clientes = [];
+            fecharModalExcluirConta();
+            avisar('Sua conta foi excluída.');
+        } catch (err) {
+            console.error(err);
+            if (empresaAtual) iniciarSincronia();
+            erro.textContent = (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password')
+                ? 'Senha incorreta.'
+                : 'Não foi possível excluir agora. Código: ' + (err.code || 'desconhecido');
+            erro.classList.remove('hidden');
+        }
     }
 
 
@@ -1535,45 +1900,61 @@
     }
 
     function importarDados(e) {
-        const file = e.target.files[0];
+        const input = e.target;
+        const file = input.files[0];
         if (!file) return;
+        if (somenteLeitura()) { input.value = ''; return; }
         const reader = new FileReader();
-        reader.onload = function(evt) {
+        reader.onload = async function (evt) {
             try {
                 const dados = JSON.parse(evt.target.result);
-                if (dados.obras && dados.clientes) {
-                    obras = dados.obras;
-                    clientes = dados.clientes;
-                    salvarLocalStorage();
-                    if (coreDisponivel) {
-                        Promise.all([
-                            ...obras.map(o => obrasModule.salvar(o)),
-                            ...clientes.map(c => clientesModule.salvar(c))
-                        ]).catch(err => {
-                            console.error(err);
-                            mostrarBannerErro('⚠️ Backup importado localmente, mas houve falha ao sincronizar tudo com o Fênix Core.');
-                        });
-                    }
-                    alert('✅ Dados importados com sucesso! O sistema foi atualizado.');
-                } else {
-                    alert('⚠️ Arquivo de backup inválido.');
+                if (!dados || !Array.isArray(dados.obras) || !Array.isArray(dados.clientes)) {
+                    avisar('⚠️ Arquivo de backup inválido.', 'erro');
+                    return;
                 }
+                if (!syncObras || !syncClientes) {
+                    avisar('⚠️ Entre na sua conta para importar um backup.', 'erro');
+                    return;
+                }
+                const idOk = x => x && x.id != null && ID_SEGURO.test(String(x.id));
+                const obrasOk = dados.obras.filter(idOk).map(o => Object.assign(
+                    { contratante: '', cliente: '', nomeObra: '', valor: 0, custoOp: 0, custoMat: 0, statusPagamento: 'Pendente', valorPago: 0, status: 'Em Andamento' },
+                    o, { diasTrabalho: Array.isArray(o.diasTrabalho) ? o.diasTrabalho : [] }));
+                const clientesOk = dados.clientes.filter(c => idOk(c) && c.nome);
+                const ignorados = (dados.obras.length - obrasOk.length) + (dados.clientes.length - clientesOk.length);
+                const seguir = await FenixCore.saida.confirmar(
+                    `Importar ${obrasOk.length} serviço(s) e ${clientesOk.length} cliente(s)? Itens com o mesmo código serão substituídos pelos do arquivo; o restante é mantido.`,
+                    { textoSair: 'Importar', textoFicar: 'Cancelar' });
+                if (!seguir) return;
+                await Promise.all([syncObras.importarLista(obrasOk), syncClientes.importarLista(clientesOk)]);
+                redesenharTelaAtual();
+                avisar('✅ Backup importado.' + (ignorados ? ` ${ignorados} item(ns) inválido(s) foram ignorados.` : ''));
             } catch (err) {
-                alert('❌ Erro ao ler o arquivo de dados JSON.');
+                console.error(err);
+                avisar('❌ Erro ao ler o arquivo de backup (JSON).', 'erro');
+            } finally {
+                input.value = '';
             }
         };
         reader.readAsText(file);
     }
 
     function gerarCodigoObra() {
-        return 'OBR-' + Math.floor(1000 + Math.random() * 9000);
+        let codigo, tentativas = 0;
+        do {
+            const digitos = tentativas < 50 ? 4 : 6;
+            const min = Math.pow(10, digitos - 1);
+            codigo = 'OBR-' + Math.floor(min + Math.random() * 9 * min);
+            tentativas++;
+        } while (obras.some(o => o.id === codigo));
+        return codigo;
     }
 
     function carregarFiltroClientes() {
         const selectFiltro = document.getElementById('filtroCliente');
         const valorAtual = selectFiltro.value;
         selectFiltro.innerHTML = '<option value="">Todos os Clientes</option>';
-        clientes.forEach(c => { selectFiltro.innerHTML += `<option value="${c.nome}">${c.nome}</option>`; });
+        clientes.forEach(c => { selectFiltro.innerHTML += `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`; });
         selectFiltro.value = valorAtual;
     }
 
@@ -1592,9 +1973,9 @@
         clientes.forEach(c => {
             const atendimentos = contarAtendimentosCliente(c.nome);
             tbody.innerHTML += `
-                <tr onclick="abrirHistoricoCliente('${c.id}')" class="cursor-pointer hover:bg-slate-50 transition">
-                    <td class="p-2"><strong>${c.nome}</strong><br><span class="text-slate-400 text-[10px]">${c.cnpj || 'Sem CNPJ'}</span></td>
-                    <td class="p-2 text-slate-600">${c.endereco || '-'}</td>
+                <tr onclick="abrirHistoricoCliente('${esc(c.id)}')" class="cursor-pointer hover:bg-slate-50 transition">
+                    <td class="p-2"><strong>${esc(c.nome)}</strong><br><span class="text-slate-400 text-[10px]">${esc(c.cnpj || 'Sem CNPJ')}</span></td>
+                    <td class="p-2 text-slate-600">${esc(c.endereco || '-')}</td>
                     <td class="p-2 text-center font-semibold" style="color:var(--fx-blue);">${atendimentos}</td>
                 </tr>
             `;
@@ -1603,6 +1984,7 @@
 
     function adicionarCliente(e) {
         e.preventDefault();
+        if (somenteLeitura()) return;
         const novo = {
             id: Date.now(),
             nome: document.getElementById('novoNomeCliente').value,
@@ -1646,12 +2028,12 @@
                     <div class="border rounded-lg p-3 hover:bg-slate-50">
                         <div class="flex justify-between items-start">
                             <div>
-                                <a href="#" onclick="fecharModalHistoricoCliente(); mudarView('relatorios'); gerarRelatorioObra('${o.id}'); return false;" class="text-xs font-bold underline" style="color:var(--fx-blue);">${o.id}</a>
-                                <span class="text-xs text-slate-600"> — ${o.nomeObra || 'Sem identificador'}</span>
+                                <a href="#" onclick="fecharModalHistoricoCliente(); mudarView('relatorios'); gerarRelatorioObra('${esc(o.id)}'); return false;" class="text-xs font-bold underline" style="color:var(--fx-blue);">${esc(o.id)}</a>
+                                <span class="text-xs text-slate-600"> — ${esc(o.nomeObra || 'Sem identificador')}</span>
                             </div>
                             <span class="text-xs font-semibold" style="color:var(--fx-text);">R$ ${formatarMoeda(o.valor || 0)}</span>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-1">${periodo} · <strong>${qtdAtendimentos} atendimento${qtdAtendimentos === 1 ? '' : 's'}</strong> · ${o.status}</p>
+                        <p class="text-[11px] text-slate-500 mt-1">${periodo} · <strong>${qtdAtendimentos} atendimento${qtdAtendimentos === 1 ? '' : 's'}</strong> · ${esc(o.status)}</p>
                     </div>
                 `;
             }).join('');
@@ -1678,15 +2060,18 @@
         const modal = document.getElementById('modalEditarCliente');
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+        guardaCliente = iniciarGuarda('formEditarCliente');
     }
 
     function fecharModalEditarCliente() {
+        guardaCliente = null;
         document.getElementById('modalEditarCliente').classList.add('hidden');
         document.getElementById('modalEditarCliente').classList.remove('flex');
     }
 
     function salvarEdicaoCliente(e) {
         e.preventDefault();
+        if (somenteLeitura()) return;
         const id = document.getElementById('editClienteId').value;
         const cliente = clientes.find(c => String(c.id) === String(id));
         if (!cliente) return;
@@ -1719,7 +2104,7 @@
     function carregarSelectModalClientes() {
         const select = document.getElementById('obraCliente');
         select.innerHTML = '<option value="">Selecione um cliente...</option>';
-        clientes.forEach(c => { select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`; });
+        clientes.forEach(c => { select.innerHTML += `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`; });
     }
 
     function autopreencherEndereco() {
@@ -1729,6 +2114,23 @@
     }
 
     // ===================== OBRAS: CRIAR / EDITAR / EXCLUIR =====================
+    // ===================== REGRA 71: NÃO PERDER O QUE ESTÁ SENDO EDITADO =====================
+    let guardaObra = null, guardaDia = null, guardaCliente = null;
+    function iniciarGuarda(idForm) {
+        try { return { ativo: true, form: FenixCore.saida.formulario(document.getElementById(idForm)) }; }
+        catch (e) { return null; }
+    }
+    async function pedirFechar(guarda, fechar) {
+        if (guarda && guarda.ativo && guarda.form.tem()) {
+            const sair = await FenixCore.saida.confirmar('Você tem alterações que ainda não foram salvas. Deseja sair mesmo assim?');
+            if (!sair) return;
+        }
+        fechar();
+    }
+    function pedirFecharModalObra() { pedirFechar(guardaObra, fecharModalObra); }
+    function pedirFecharModalDia() { pedirFechar(guardaDia, fecharModalDia); }
+    function pedirFecharModalEditarCliente() { pedirFechar(guardaCliente, fecharModalEditarCliente); }
+
     function abrirModalNovaObra() {
         carregarSelectModalClientes();
         document.getElementById('formObra').reset();
@@ -1741,6 +2143,7 @@
         document.getElementById('tituloModalObra').innerText = "Cadastrar Novo Serviço";
         document.getElementById('modalObra').classList.remove('hidden');
         document.getElementById('modalObra').classList.add('flex');
+        guardaObra = iniciarGuarda('formObra');
     }
 
     function editarObra(obraId) {
@@ -1767,6 +2170,7 @@
         document.getElementById('tituloModalObra').innerText = `Editar Serviço: ${obra.id}`;
         document.getElementById('modalObra').classList.remove('hidden');
         document.getElementById('modalObra').classList.add('flex');
+        guardaObra = iniciarGuarda('formObra');
     }
 
     // Modal de exclusão genérico (obra ou cliente) — tipoExclusaoPendente decide o que
@@ -1795,7 +2199,7 @@
         document.getElementById('excluirItemLabel').innerText = 'o cliente ' + cliente.nome;
         document.getElementById('excluirBtnTipo').innerText = 'Cliente';
         document.getElementById('excluirMensagem').innerHTML =
-            `Você está prestes a excluir <strong>${cliente.nome}</strong>. Esta ação não pode ser desfeita.` +
+            `Você está prestes a excluir <strong>${esc(cliente.nome)}</strong>. Esta ação não pode ser desfeita.` +
             (qtdServicos > 0 ? `<br><span class="text-amber-600 font-semibold">Atenção: há ${qtdServicos} serviço(s) com o nome deste cliente — eles não serão apagados, mas ficarão sem o cadastro vinculado.</span>` : '');
         document.getElementById('inputConfirmaExclusao').value = '';
         validarConfirmaExclusao();
@@ -1824,6 +2228,7 @@
     }
 
     function confirmarExclusaoPendente() {
+        if (somenteLeitura()) { fecharModalExcluir(); return; }
         if (tipoExclusaoPendente === 'obra' && obraIdParaExcluir) {
             obras = obras.filter(o => o.id !== obraIdParaExcluir);
             salvarLocalStorage();
@@ -1839,12 +2244,14 @@
     }
 
     function fecharModalObra() {
+        guardaObra = null;
         document.getElementById('modalObra').classList.add('hidden');
         document.getElementById('modalObra').classList.remove('flex');
     }
 
     function salvarObra(e) {
         e.preventDefault();
+        if (somenteLeitura()) return;
         const id = document.getElementById('obraId').value;
         const valor = moedaParaFloat(document.getElementById('obraValor').value);
         const custoOp = moedaParaFloat(document.getElementById('obraCustoOp').value);
@@ -1947,21 +2354,21 @@
             tbody.innerHTML += `
                 <tr>
                     <td class="p-3 font-bold">
-                        <a href="#" onclick="mudarView('relatorios'); gerarRelatorioObra('${obra.id}'); return false;" class="underline" style="color:var(--fx-blue);" title="Clique para ver os dias e detalhes">${obra.id}</a>
+                        <a href="#" onclick="mudarView('relatorios'); gerarRelatorioObra('${esc(obra.id)}'); return false;" class="underline" style="color:var(--fx-blue);" title="Clique para ver os dias e detalhes">${esc(obra.id)}</a>
                     </td>
-                    <td class="p-3">${obra.contratante}</td>
-                    <td class="p-3 font-medium text-slate-700">${obra.cliente}</td>
-                    <td class="p-3">${obra.nomeObra || 'Sem identificador'}</td>
+                    <td class="p-3">${esc(obra.contratante)}</td>
+                    <td class="p-3 font-medium text-slate-700">${esc(obra.cliente)}</td>
+                    <td class="p-3">${esc(obra.nomeObra || 'Sem identificador')}</td>
                     <td class="p-3 text-xs">${inicioFim}<br><span class="text-slate-400">(${obra.diasTrabalho.length} atendimento${obra.diasTrabalho.length === 1 ? '' : 's'})</span></td>
-                    <td class="p-3"><span class="px-2 py-1 rounded text-xs font-semibold ${badgeColor}">${obra.status}</span></td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-xs font-semibold ${badgeColor}">${esc(obra.status)}</span></td>
                     <td class="p-3">${badgePagamento(obra)}</td>
                     <td class="p-3 text-right font-medium text-slate-700">R$ ${formatarMoeda(lucro)}</td>
                     <td class="p-3 text-center">
                         <div class="flex items-center justify-center gap-1">
-                            <button onclick="abrirModalDia('${obra.id}')" title="Ver / Registrar / Editar Dias de Atendimento" class="text-xs bg-blue-50 border border-blue-200 px-2 py-1 rounded hover:bg-blue-100" style="color:var(--fx-blue);">📅 Dias (${obra.diasTrabalho ? obra.diasTrabalho.length : 0})</button>
-                            <button onclick="editarObra('${obra.id}')" title="Editar Obra / Escopo" class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded hover:bg-amber-100">✏️ Editar</button>
-                            <button onclick="alterarStatus('${obra.id}')" title="Alternar Status" class="text-xs bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded hover:bg-slate-100">Status</button>
-                            <button onclick="excluirObra('${obra.id}')" title="Excluir Obra" class="text-xs bg-rose-50 text-rose-600 border border-rose-200 px-2 py-1 rounded hover:bg-rose-100">🗑️</button>
+                            <button onclick="abrirModalDia('${esc(obra.id)}')" title="Ver / Registrar / Editar Dias de Atendimento" class="text-xs bg-blue-50 border border-blue-200 px-2 py-1 rounded hover:bg-blue-100" style="color:var(--fx-blue);">📅 Dias (${obra.diasTrabalho ? obra.diasTrabalho.length : 0})</button>
+                            <button data-grava onclick="editarObra('${esc(obra.id)}')" title="Editar Obra / Escopo" class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded hover:bg-amber-100">✏️ Editar</button>
+                            <button data-grava onclick="alterarStatus('${esc(obra.id)}')" title="Alternar Status" class="text-xs bg-slate-50 text-slate-600 border border-slate-200 px-2 py-1 rounded hover:bg-slate-100">Status</button>
+                            <button data-grava onclick="excluirObra('${esc(obra.id)}')" title="Excluir Obra" class="text-xs bg-rose-50 text-rose-600 border border-rose-200 px-2 py-1 rounded hover:bg-rose-100">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -1978,9 +2385,11 @@
         renderizarListaDias(obraId);
         document.getElementById('modalDia').classList.remove('hidden');
         document.getElementById('modalDia').classList.add('flex');
+        guardaDia = iniciarGuarda('formDia');
     }
 
     function fecharModalDia() {
+        guardaDia = null;
         document.getElementById('modalDia').classList.add('hidden');
         document.getElementById('modalDia').classList.remove('flex');
         // o contador "📅 Dias (n)" na tabela de serviços pode ter mudado
@@ -2005,11 +2414,11 @@
             <li class="flex items-start justify-between gap-2 p-2.5 bg-slate-50 border rounded text-xs">
                 <div class="min-w-0">
                     <p class="font-bold" style="color:var(--fx-blue);">${formatarData(d.data)}</p>
-                    <p class="text-slate-600 break-words">${d.descricao}</p>
+                    <p class="text-slate-600 break-words">${esc(d.descricao)}</p>
                 </div>
                 <div class="flex gap-1 shrink-0">
-                    <button type="button" onclick="editarDia('${obraId}', ${d._idx})" title="Editar este dia" class="text-amber-700 bg-amber-50 border border-amber-200 rounded w-7 h-7 flex items-center justify-center hover:bg-amber-100">✏️</button>
-                    <button type="button" onclick="excluirDia('${obraId}', ${d._idx})" title="Excluir este dia" class="text-rose-600 bg-rose-50 border border-rose-200 rounded w-7 h-7 flex items-center justify-center hover:bg-rose-100">🗑️</button>
+                    <button type="button" onclick="editarDia('${esc(obraId)}', ${d._idx})" title="Editar este dia" class="text-amber-700 bg-amber-50 border border-amber-200 rounded w-7 h-7 flex items-center justify-center hover:bg-amber-100">✏️</button>
+                    <button type="button" onclick="excluirDia('${esc(obraId)}', ${d._idx})" title="Excluir este dia" class="text-rose-600 bg-rose-50 border border-rose-200 rounded w-7 h-7 flex items-center justify-center hover:bg-rose-100">🗑️</button>
                 </div>
             </li>
         `).join('');
@@ -2026,6 +2435,7 @@
         document.getElementById('btnSalvarDia').innerText = 'Salvar Alteração';
         document.getElementById('btnCancelarEdicaoDia').classList.remove('hidden');
         document.getElementById('diaData').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        guardaDia = iniciarGuarda('formDia');
     }
 
     function cancelarEdicaoDia() {
@@ -2034,21 +2444,29 @@
         document.getElementById('tituloFormDia').innerText = '+ Registrar novo dia';
         document.getElementById('btnSalvarDia').innerText = 'Registrar Dia';
         document.getElementById('btnCancelarEdicaoDia').classList.add('hidden');
+        if (guardaDia) guardaDia = iniciarGuarda('formDia');
     }
 
-    function excluirDia(obraId, indice) {
+    async function excluirDia(obraId, indice) {
         const obra = obras.find(o => o.id === obraId);
         if (!obra || !obra.diasTrabalho[indice]) return;
-        if (!confirm(`Excluir o dia ${formatarData(obra.diasTrabalho[indice].data)}? Essa ação não pode ser desfeita.`)) return;
-        obra.diasTrabalho.splice(indice, 1);
+        if (somenteLeitura()) return;
+        const ok = await FenixCore.saida.confirmar(
+            `Excluir o dia ${formatarData(obra.diasTrabalho[indice].data)}? Essa ação não pode ser desfeita.`,
+            { textoSair: 'Excluir', textoFicar: 'Cancelar' });
+        if (!ok) return;
+        const atual = obras.find(o => o.id === obraId); // pode ter mudado enquanto a pergunta estava aberta
+        if (!atual || !atual.diasTrabalho[indice]) return;
+        atual.diasTrabalho.splice(indice, 1);
         salvarLocalStorage();
-        sincronizarObraRemota(obra);
+        sincronizarObraRemota(atual);
         cancelarEdicaoDia();
         renderizarListaDias(obraId);
     }
 
     function salvarDia(e) {
         e.preventDefault();
+        if (somenteLeitura()) return;
         const obraId = document.getElementById('diaObraId').value;
         const obra = obras.find(o => o.id === obraId);
         const indiceEdicao = document.getElementById('diaEditandoIndex').value;
@@ -2069,6 +2487,7 @@
     }
 
     function alterarStatus(obraId) {
+        if (somenteLeitura()) return;
         const obra = obras.find(o => o.id === obraId);
         const opcoes = ['Em Andamento', 'Concluído', 'Interrompido'];
         obra.status = opcoes[(opcoes.indexOf(obra.status) + 1) % opcoes.length];
@@ -2092,22 +2511,22 @@
                 <div class="flex justify-between items-center mb-1">
                     <span class="text-xs font-bold" style="color:var(--fx-blue);">Dia ${index + 1} - ${formatarData(d.data)}</span>
                 </div>
-                <p class="text-xs text-slate-600">${d.descricao}</p>
+                <p class="text-xs text-slate-600">${esc(d.descricao)}</p>
             </div>
         `).join('');
 
         area.innerHTML = `
             <div class="border-b pb-4 mb-4">
-                <h3 class="text-xl font-bold" style="color:var(--fx-text);">Relatório Detalhado do Serviço: ${obra.id}</h3>
-                <p class="text-sm font-semibold" style="color:var(--fx-blue);">${obra.nomeObra || 'Sem identificador'}</p>
-                <p class="text-xs text-slate-500">Contratante: <strong>${obra.contratante}</strong> | Status: <strong>${obra.status}</strong></p>
+                <h3 class="text-xl font-bold" style="color:var(--fx-text);">Relatório Detalhado do Serviço: ${esc(obra.id)}</h3>
+                <p class="text-sm font-semibold" style="color:var(--fx-blue);">${esc(obra.nomeObra || 'Sem identificador')}</p>
+                <p class="text-xs text-slate-500">Contratante: <strong>${esc(obra.contratante)}</strong> | Status: <strong>${esc(obra.status)}</strong></p>
             </div>
             <div class="grid grid-cols-2 gap-4 text-sm mb-4">
-                <div><strong>Cliente Atendido:</strong> ${obra.cliente}</div>
-                <div><strong>Local do Serviço:</strong> ${obra.local}</div>
+                <div><strong>Cliente Atendido:</strong> ${esc(obra.cliente)}</div>
+                <div><strong>Local do Serviço:</strong> ${esc(obra.local)}</div>
                 <div><strong>Data de Início:</strong> ${formatarData(obra.dataInicio)}</div>
                 <div><strong>Data de Encerramento:</strong> ${formatarData(obra.dataFim)}</div>
-                <div class="col-span-2"><strong>Escopo do Serviço:</strong> ${obra.escopo}</div>
+                <div class="col-span-2"><strong>Escopo do Serviço:</strong> ${esc(obra.escopo)}</div>
             </div>
             <div class="bg-white p-3 rounded border mb-4 text-sm grid grid-cols-4 gap-2">
                 <div><span class="text-xs text-slate-500 block">Valor do Serviço</span> <strong>R$ ${formatarMoeda(obra.valor)}</strong></div>
@@ -2116,13 +2535,13 @@
                 <div><span class="text-xs text-slate-500 block">Lucro Líquido</span> <strong class="text-emerald-600">R$ ${formatarMoeda(obra.valor - obra.custoOp - obra.custoMat)}</strong></div>
             </div>
             <div class="bg-white p-3 rounded border mb-4 text-sm grid grid-cols-3 gap-2">
-                <div><span class="text-xs text-slate-500 block">Situação de Pagamento</span> <strong>${obra.statusPagamento || 'Pendente'}</strong></div>
+                <div><span class="text-xs text-slate-500 block">Situação de Pagamento</span> <strong>${esc(obra.statusPagamento || 'Pendente')}</strong></div>
                 <div><span class="text-xs text-slate-500 block">Valor Pago</span> <strong>R$ ${formatarMoeda(obra.valorPago || 0)}</strong></div>
                 <div><span class="text-xs text-slate-500 block">Saldo Devedor</span> <strong class="text-rose-600">R$ ${formatarMoeda(Math.max(obra.valor - (obra.valorPago || 0), 0))}</strong></div>
             </div>
             <h4 class="font-bold text-sm mb-3 text-slate-700 border-b pb-1">Linha do Tempo dos Atendimentos (${diasTrabalhados.length} atendimento${diasTrabalhados.length === 1 ? '' : 's'} realizado${diasTrabalhados.length === 1 ? '' : 's'}):</h4>
             <div class="space-y-2">${diasHTML || '<p class="text-xs text-slate-400 italic">Nenhum dia de trabalho registrado até o momento.</p>'}</div>
-            ${obra.obs ? `<div class="mt-4 text-xs text-slate-500 border-t pt-2"><strong>Observações:</strong> ${obra.obs}</div>` : ''}
+            ${obra.obs ? `<div class="mt-4 text-xs text-slate-500 border-t pt-2"><strong>Observações:</strong> ${esc(obra.obs)}</div>` : ''}
         `;
     }
 
@@ -2143,11 +2562,11 @@
             const qtd = o.diasTrabalho ? o.diasTrabalho.length : 0;
             return `
                 <tr class="border-b text-xs">
-                    <td class="py-2 font-bold">${o.id}</td>
-                    <td class="py-2">${o.nomeObra || '-'}</td>
-                    <td class="py-2">${o.contratante}</td>
+                    <td class="py-2 font-bold">${esc(o.id)}</td>
+                    <td class="py-2">${esc(o.nomeObra || '-')}</td>
+                    <td class="py-2">${esc(o.contratante)}</td>
                     <td class="py-2">${datasTxt} (${qtd} atendimento${qtd === 1 ? '' : 's'})</td>
-                    <td class="py-2">${o.status}</td>
+                    <td class="py-2">${esc(o.status)}</td>
                     <td class="py-2 text-right">R$ ${formatarMoeda(o.valor)}</td>
                 </tr>
             `;
@@ -2156,7 +2575,7 @@
         area.innerHTML = `
             <div class="border-b pb-3 mb-3">
                 <h3 class="text-lg font-bold" style="color:var(--fx-text);">Histórico de Serviços do Cliente</h3>
-                <p class="text-sm font-bold" style="color:var(--fx-blue);">${clienteNome}</p>
+                <p class="text-sm font-bold" style="color:var(--fx-blue);">${esc(clienteNome)}</p>
                 <p class="text-xs text-slate-500">Total de serviços prestados para este cliente: ${obrasDoCliente.length}</p>
             </div>
             <div class="grid grid-cols-3 gap-2 mb-4">
@@ -2197,18 +2616,18 @@
             const datasTxt = (o.dataInicio || o.dataFim) ? `${formatarData(o.dataInicio)} a ${formatarData(o.dataFim)}` : 'Sem datas';
             return `
                 <tr class="border-b text-xs">
-                    <td class="py-2 font-bold">${o.id}</td>
-                    <td class="py-2">${o.cliente}</td>
-                    <td class="py-2">${o.nomeObra || '-'}</td>
+                    <td class="py-2 font-bold">${esc(o.id)}</td>
+                    <td class="py-2">${esc(o.cliente)}</td>
+                    <td class="py-2">${esc(o.nomeObra || '-')}</td>
                     <td class="py-2">${datasTxt}</td>
-                    <td class="py-2">${o.status}</td>
+                    <td class="py-2">${esc(o.status)}</td>
                     <td class="py-2 text-right">R$ ${formatarMoeda(o.valor)}</td>
                 </tr>
             `;
         }).join('');
 
         area.innerHTML = `
-            <h3 class="text-lg font-bold mb-1" style="color:var(--fx-text);">Resumo de Serviços - Contratante: ${contratante}</h3>
+            <h3 class="text-lg font-bold mb-1" style="color:var(--fx-text);">Resumo de Serviços - Contratante: ${esc(contratante)}</h3>
             <p class="text-xs text-slate-500 mb-4">Total de serviços vinculados: ${filtradas.length}</p>
             <table class="w-full text-left mb-4">
                 <thead class="border-b text-xs uppercase font-semibold text-slate-600">
@@ -2228,12 +2647,12 @@
         const area = document.getElementById('areaImpressao');
         let linhas = obras.map(o => `
             <tr class="border-b text-xs">
-                <td class="py-2 font-bold">${o.cliente}</td>
-                <td class="py-2">${o.id} - ${o.nomeObra || 'Serviço'}</td>
-                <td class="py-2">${o.contratante}</td>
+                <td class="py-2 font-bold">${esc(o.cliente)}</td>
+                <td class="py-2">${esc(o.id)} - ${esc(o.nomeObra || 'Serviço')}</td>
+                <td class="py-2">${esc(o.contratante)}</td>
                 <td class="py-2">${formatarData(o.dataInicio)}</td>
                 <td class="py-2">${formatarData(o.dataFim)}</td>
-                <td class="py-2">${o.status}</td>
+                <td class="py-2">${esc(o.status)}</td>
             </tr>
         `).join('');
 
