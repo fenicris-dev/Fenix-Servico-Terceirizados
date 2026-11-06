@@ -1,5 +1,5 @@
 <!--
-    Fênix Controle de Serviços Terceirizados — v3.7
+    Fênix Controle de Serviços Terceirizados — v3.8
     (antes chamado "Controle de Obras Terceirizadas" até a v1.7)
     Padrão: Livro das Regras Fênix v5.2 (Fênix Core v5.2). Ficha de aplicação: A,B,C,E,F,G,H,I,J
     (A banco de dados, B login, C cadastro PF/PJ, E backup, F PDF, G dashboard, H login com Google,
@@ -7,6 +7,9 @@
     Slogan: "Cada serviço sob controle, do início ao pagamento."
 
     Changelog:
+    v3.8: lista de contratantes deixa de ser fixa em 3 lugares do código: uma lista única (Carlos Lima e
+          João Carlos + qualquer contratante que já exista nos serviços) alimenta o filtro, o formulário
+          de serviço e os botões "Resumo" dos relatórios.
     v3.7: cadastro de clientes pelo Fênix Core (pessoa física ou jurídica, CPF/CNPJ validados com máscara,
           busca de CNPJ na Receita e de CEP, cadastro central FenixCore.pessoas; o app guarda a referência
           e um cache leve); relatórios em PDF (jsPDF embutido); aviso quando o registro aberto foi alterado
@@ -374,7 +377,7 @@
                 </p>
             </div>
         </div>
-        <p class="text-center text-white/50 text-[10px] mt-4">Fênix Core · mesma conta do Fênix Ativos · v3.7</p>
+        <p class="text-center text-white/50 text-[10px] mt-4">Fênix Core · mesma conta do Fênix Ativos · v3.8</p>
     </div>
 </div>
 
@@ -390,7 +393,7 @@
             <div class="leading-tight">
                 <p class="text-white font-bold text-sm md:text-base flex items-center gap-2">
                     Controle de Serviços Terceirizados
-                    <a href="#" onclick="abrirModalSobre(); return false;" title="Versão instalada — clique pra ver o Changelog" id="headerVersaoBadge" class="text-white/70 text-[9px] font-bold border border-white/25 rounded-full px-1.5 py-0.5 leading-none hover:bg-white/10 hover:text-white">v3.7</a>
+                    <a href="#" onclick="abrirModalSobre(); return false;" title="Versão instalada — clique pra ver o Changelog" id="headerVersaoBadge" class="text-white/70 text-[9px] font-bold border border-white/25 rounded-full px-1.5 py-0.5 leading-none hover:bg-white/10 hover:text-white">v3.8</a>
                 </p>
                 <p class="text-white/50 text-[10px] hidden sm:block">Fênix Soluções Tecnológicas</p>
             </div>
@@ -573,8 +576,6 @@
                             <label class="block text-xs font-medium text-slate-500">Contratante</label>
                             <select id="filtroContratante" onchange="carregarObras()" class="w-full border rounded p-2 text-sm mt-1">
                                 <option value="">Todos</option>
-                                <option value="Carlos Lima">Carlos Lima</option>
-                                <option value="João Carlos">João Carlos</option>
                             </select>
                         </div>
                         <div>
@@ -646,8 +647,7 @@
                 <section class="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
                     <h2 class="text-sm font-bold mb-4 no-print" style="color:var(--fx-text);">Gerador de Relatórios</h2>
                     <div class="flex flex-wrap gap-2 mb-6 no-print">
-                        <button onclick="gerarRelatorioResumoContratante('Carlos Lima')" class="fx-btn-secondary text-xs px-3 py-2 rounded">Resumo: Carlos Lima</button>
-                        <button onclick="gerarRelatorioResumoContratante('João Carlos')" class="fx-btn-secondary text-xs px-3 py-2 rounded">Resumo: João Carlos</button>
+                        <span id="botoesResumoContratante" class="contents"></span>
                         <button onclick="gerarRelatorioClienteSelecionado()" class="fx-btn-primary text-xs px-3 py-2 rounded font-semibold">Relatório do Cliente Selecionado</button>
                         <button onclick="gerarRelatorioSimplificadoClientes()" class="fx-btn-secondary text-xs px-3 py-2 rounded">Relatório Geral Simplificado</button>
                         <button onclick="baixarPDFRelatorio()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded font-bold ml-auto">Baixar PDF</button>
@@ -668,7 +668,7 @@
                 <a href="https://wa.me/5579999680880" target="_blank" class="hover:text-slate-600">&lt;Cristiano Fênix/&gt;</a>
                 &nbsp;|&nbsp;
                 <a href="https://instagram.com/fenixsolucoestecnologicas" target="_blank" class="hover:text-slate-600 font-medium">© Fênix Soluções Tecnológicas</a>
-                &nbsp;·&nbsp; <span id="seloRodape">v3.7</span>
+                &nbsp;·&nbsp; <span id="seloRodape">v3.8</span>
                 &nbsp;·&nbsp; <a href="#" onclick="abrirModalSobre(); return false;" class="hover:text-slate-600 underline">Sobre</a>
             </p>
         </footer>
@@ -685,8 +685,6 @@
                 <div>
                     <label class="block text-xs font-semibold">Contratante</label>
                     <select id="obraContratante" class="w-full border rounded p-2 text-sm mt-1" required>
-                        <option value="Carlos Lima">Carlos Lima</option>
-                        <option value="João Carlos">João Carlos</option>
                     </select>
                 </div>
                 <div>
@@ -1378,7 +1376,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     let usuarioAtualFirebase = null;
     let vinculoUsuarioAtual = null;
     let infoSobreApp = null;
-    const VERSAO_APP = 'v3.7';
+    const VERSAO_APP = 'v3.8';
 
     function atualizarStatusConexao(estado) {
         const dot = document.getElementById('statusDot');
@@ -1700,8 +1698,29 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if (syncClientes) syncClientes.forcarSincronia();
     }
 
+    // ===================== CONTRATANTES (v3.8) =====================
+    // Lista única: os dois contratantes de sempre + qualquer outro que já exista nos serviços
+    // (assim um serviço importado de backup nunca "some" do filtro nem dos relatórios).
+    const CONTRATANTES_BASE = ['Carlos Lima', 'João Carlos'];
+    function listaContratantes() {
+        const extras = Array.from(new Set(obras.map(o => (o && o.contratante ? String(o.contratante).trim() : '')).filter(n => n && !CONTRATANTES_BASE.includes(n))));
+        extras.sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        return CONTRATANTES_BASE.concat(extras);
+    }
+    function montarContratantes() {
+        const lista = listaContratantes();
+        const opcoes = lista.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+        const fil = document.getElementById('filtroContratante');
+        if (fil) { const v = fil.value; fil.innerHTML = '<option value="">Todos</option>' + opcoes; fil.value = lista.includes(v) ? v : ''; }
+        const sel = document.getElementById('obraContratante');
+        if (sel) { const v = sel.value; sel.innerHTML = opcoes; sel.value = lista.includes(v) ? v : lista[0]; }
+        const bt = document.getElementById('botoesResumoContratante');
+        if (bt) bt.innerHTML = lista.map((n, i) => `<button type="button" onclick="gerarRelatorioResumoContratante(listaContratantes()[${i}])" class="fx-btn-secondary text-xs px-3 py-2 rounded">Resumo: ${esc(n)}</button>`).join('');
+    }
+
     function redesenharTelaAtual() {
         try {
+            montarContratantes();
             carregarFiltroClientes();
             carregarObras();
             renderizarDashboard();
@@ -1869,7 +1888,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     function entrarNoApp() {
         document.getElementById('appRoot').classList.remove('hidden');
-        document.getElementById('headerVersaoBadge').innerText = (FenixCore && FenixCore.versoes) ? FenixCore.versoes.selo('3.7') : VERSAO_APP;
+        document.getElementById('headerVersaoBadge').innerText = (FenixCore && FenixCore.versoes) ? FenixCore.versoes.selo('3.8') : VERSAO_APP;
         salvarLocalStorage();
         atualizarBadgeFila();
         mudarView('dashboard');
@@ -1879,7 +1898,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if (coreDisponivel && FenixCore) {
             try { infoSobreApp = FenixCore.sobre.registrarAcesso(NOME_APP, VERSAO_APP); }
             catch (e) { console.error('FenixCore.sobre:', e); }
-            try { FenixCore.versoes.montarSelo('#seloRodape', '3.7', { coreMinimo: '5.2', livro: '5.2' }); }
+            try { FenixCore.versoes.montarSelo('#seloRodape', '3.8', { coreMinimo: '5.2', livro: '5.2' }); }
             catch (e) { console.error('FenixCore.versoes:', e); }
             try {
                 FenixCore.backup.verificarLembrete(NOME_APP, {
@@ -1916,6 +1935,14 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     // Changelog (regra 13): datas das versões antigas aproximadas pelo histórico das conversas
     const CHANGELOG_APP = [
+        {
+            "versao": "3.8",
+            "criadaEm": "2026-11-06",
+            "modificadaEm": "2026-11-06",
+            "mudancas": [
+                "Contratantes: os botões \"Resumo\" dos relatórios, o filtro da lista e o formulário de serviço passam a usar uma lista única (Carlos Lima, João Carlos e qualquer outro contratante que já exista nos serviços). Antes eram dois nomes escritos em três lugares do código."
+            ]
+        },
         {
             "versao": "3.7",
             "criadaEm": "2026-11-05",
@@ -2068,7 +2095,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if (coreDisponivel && FenixCore) {
             try {
                 FenixCore.sobre.montarTela('#areaSobre', {
-                    nomeApp: NOME_APP, titulo: 'Controle de Serviços Terceirizados', versao: '3.7',
+                    nomeApp: NOME_APP, titulo: 'Controle de Serviços Terceirizados', versao: '3.8',
                     changelog: CHANGELOG_APP, livro: '5.2', coreMinimo: '5.2'
                 });
             } catch (e) { console.error('sobre.montarTela:', e); }
@@ -2082,7 +2109,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     function abrirModalManual() {
         if (coreDisponivel && FenixCore) {
             try {
-                FenixCore.manual.montarTela('#areaManual', MANUAL_MD, { nomeApp: NOME_APP, versao: '3.7', titulo: 'Controle de Serviços Terceirizados' });
+                FenixCore.manual.montarTela('#areaManual', MANUAL_MD, { nomeApp: NOME_APP, versao: '3.8', titulo: 'Controle de Serviços Terceirizados' });
             } catch (e) { console.error('manual.montarTela:', e); }
         } else {
             document.getElementById('areaManual').innerText = 'Abra o app com internet para ver o manual.';
@@ -2178,6 +2205,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         document.querySelectorAll('.fx-nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === nome));
         document.querySelectorAll('.fx-mobile-tab').forEach(b => b.classList.toggle('active', b.dataset.mtab === nome));
         if (nome === 'clientes') renderizarTabelaClientes();
+        if (nome === 'relatorios') montarContratantes();
         if (nome === 'dashboard') renderizarDashboard();
     }
 
@@ -2817,6 +2845,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }
 
     function carregarSelectModalClientes() {
+        montarContratantes();
         const select = document.getElementById('obraCliente');
         select.innerHTML = '<option value="">Selecione um cliente...</option>';
         clientes.forEach(c => { select.innerHTML += `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`; });

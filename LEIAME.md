@@ -1,16 +1,21 @@
-# Fênix Controle de Serviços Terceirizados — v3.7
+# Fênix Controle de Serviços Terceirizados — v3.8
 
 Padrão: Livro das Regras Fênix v5.2 · Fênix Core v5.2 · Ficha: A, B, C, E, F, G, H, I, J
 (A banco de dados, B login, C cadastro PF/PJ, E backup, F PDF, G dashboard, H login com Google, I tempo real, J tema escuro;
 D ficha de produto não se aplica a este app).
 
 ## Arquivos
-- `fenix-controle-servicos-terceirizados-v3.7.html` — o app (arquivo único, ~610 KB: inclui o gerador de PDF jsPDF 2.5.2, MIT).
+- `fenix-controle-servicos-terceirizados-v3.8.html` — o app (arquivo único, ~610 KB: inclui o gerador de PDF jsPDF 2.5.2, MIT).
 - `fenix-manual-controle-servicos-terceirizados.md` — manual do usuário (o mesmo texto está dentro do app).
 
 ## Como instalar
-Substitua o arquivo do app pelo v3.7. O Core vem do endereço fixo
+Substitua o arquivo do app pelo v3.8. O Core vem do endereço fixo
 `https://fenicris-dev.github.io/Fenix-Core/fenix-core.js` (carregador oficial, com cópia em cache).
+
+## O que mudou na v3.8
+- **Contratantes sem nome fixo no código:** uma lista única (Carlos Lima, João Carlos e qualquer outro contratante que já exista nos serviços)
+  alimenta o filtro da lista, o formulário de serviço e os botões "Resumo" dos relatórios. Testado com um contratante extra.
+  Não há tela para cadastrar contratantes: um novo nome só entra por backup/importação.
 
 ## O que mudou na v3.7
 - **Cadastro de clientes pelo Core (grupo C):** escolha Pessoa Jurídica (CNPJ) ou Pessoa Física (CPF); máscara e validação do
@@ -46,4 +51,3 @@ A v3.5 mostra os dados só até a migração da v3.6.
 - Datas das versões antigas no Changelog foram aproximadas pelo histórico das conversas.
 - O Dashboard atual (cards clicáveis) foi mantido no lugar de `dashboard.montar` do Core.
 - Padronização de texto (regra 42) é aplicada pelo Core ao cadastro central; o nome guardado no app é o digitado (é a chave dos serviços).
-- Os botões "Resumo: Carlos Lima / João Carlos" continuam fixos no código.
