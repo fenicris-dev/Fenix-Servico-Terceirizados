@@ -15,14 +15,20 @@ Cada serviço sob controle, do início ao pagamento.
 - O pagamento pode ser Pendente, Parcial (com valor pago) ou Pago; o saldo devedor é calculado sozinho.
 
 ## Clientes
+- Em **Clientes**, escolha **Pessoa Jurídica (CNPJ)** ou **Pessoa Física (CPF)**. O documento é conferido na hora; se for válido, o app busca os dados sozinho (CNPJ na Receita) e você só confere.
+- Digite o **CEP** para preencher rua, bairro, cidade e UF. Só falta o número.
+- O documento é opcional: cliente sem CPF/CNPJ continua valendo, mas não vai para o cadastro central. Não é possível repetir o mesmo documento nem o mesmo nome.
 - Toque em um cliente para ver o histórico, **Editar** ou **Excluir**. Para excluir é preciso digitar APAGAR.
 - Mudar o nome do cliente atualiza os serviços já lançados para ele.
+
+## Relatórios e PDF
+- Em **Relatórios**, gere o relatório que quiser (ou toque no código de um serviço) e use **Baixar PDF**. O arquivo é gerado no próprio aparelho, sem internet. **Imprimir** continua disponível.
 
 ## Dashboard
 - Os cartões de contagem são clicáveis: levam direto à lista de serviços filtrada por aquele número.
 
 ## Mais de um aparelho
-- Quem entra com a mesma empresa em outro aparelho vê as mudanças na hora. Se dois aparelhos mudarem o mesmo registro, vale a alteração mais recente.
+- Quem entra com a mesma empresa em outro aparelho vê as mudanças na hora. Se dois aparelhos mudarem o mesmo registro, vale a alteração mais recente. Se alguém alterar, em outro aparelho, o serviço ou cliente que você está editando, aparece um aviso antes de você salvar por cima.
 - Sem internet você continua trabalhando; ao voltar a conexão, tudo é enviado sozinho.
 
 ## Seus dados
