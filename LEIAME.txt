@@ -1,0 +1,36 @@
+FÊNIX CONTROLE DE SERVIÇOS TERCEIRIZADOS — v3.9 (11/11/2026)
+Padrão: Livro das Regras Fênix v5.8 · Fênix Core v5.8 (o app carrega o Core do endereço oficial)
+Ficha de aplicação: A, B, C, E, F, G, H, I, J (D não se aplica) + regras 74, 75, 77 e 78, que valem sempre.
+
+O QUE VAI EM CADA PASTA (regra 78)
+  index.html ................ o app (cópia sem versão no nome: é a que vai para o GitHub Pages)
+  LEIAME.txt ................ este arquivo
+  MD/ ....................... manual do usuário em Markdown (cópia sem versão)
+  DOC/ ...................... manual do usuário em PDF (cópia sem versão)
+  versoes/ .................. cópias com a versão no nome, só controle interno (NUNCA vai para a raiz do repositório)
+
+O QUE MUDOU NA v3.9
+  - Onde guardar os dados (regra 77): no 1º acesso o app pergunta "só neste aparelho" (padrão) ou "na nuvem da Fênix".
+    Quem já usava a nuvem (marca da migração neste aparelho) continua nela até responder; a pergunta aparece uma vez.
+    Mudar depois: Preferências > Onde guardar meus dados. Ao ir para a nuvem, os dados do aparelho são enviados.
+    Só no aparelho, a sincronização não liga e o indicador do topo mostra "Só no aparelho".
+  - Compartilhar (regras 74 e 75): botão na tela Sobre e aviso "Compartilhe e ganhe" quando a campanha estiver ligada (feito pelo Core).
+  - Selo "v3.9 | c 5.8", Changelog e Manual atualizados.
+  - Tudo da v3.8 e anteriores continua (clientes PF/PJ, PDF dos relatórios, aviso de conflito, contratantes, sincronia em tempo real).
+
+PARA PUBLICAR
+  1) Suba index.html, LEIAME.txt, MD/, DOC/ e versoes/ no repositório do app.
+  2) Endereço do botão Compartilhar: o app usa o endereço em que está aberto (sem o nome do arquivo). Se o endereço publicado for
+     outro, preencha a constante URL_APP_PUBLICADO no código (procure por "URL_APP_PUBLICADO").
+  3) Versão de volta (regra 70): fenix-controle-servicos-terceirizados-v3.8.html. Os dados são os mesmos; a v3.8 sempre sincroniza com a nuvem.
+
+CONFERÊNCIA DE ENTREGA (regra 72)
+  1 versão no nome ........ sim
+  2 cópia index.html ....... sim
+  3 .zip com LEIAME.txt .... sim
+  4 selo de versão ......... sim (v3.9 | c 5.8)
+  5 Changelog e Manual ..... sim (manual em MD e PDF; SEM prints de tela: o navegador de teste daqui não carrega o Tailwind e o login real é seu)
+  6 teste de fumaça ........ sim, com Core simulado (5 caminhos de armazenamento, compartilhar, importar e excluir em modo aparelho); falta o teste com o Core real
+  7 botão Compartilhar ..... sim
+  8 onde guardar os dados .. sim
+  9 estrutura de pastas .... sim (este zip)

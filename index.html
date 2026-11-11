@@ -1,12 +1,14 @@
 <!--
-    Fênix Controle de Serviços Terceirizados — v3.8
+    Fênix Controle de Serviços Terceirizados — v3.9
     (antes chamado "Controle de Obras Terceirizadas" até a v1.7)
-    Padrão: Livro das Regras Fênix v5.2 (Fênix Core v5.2). Ficha de aplicação: A,B,C,E,F,G,H,I,J
+    Padrão: Livro das Regras Fênix v5.8 (Fênix Core v5.8). Ficha de aplicação: A,B,C,E,F,G,H,I,J
     (A banco de dados, B login, C cadastro PF/PJ, E backup, F PDF, G dashboard, H login com Google,
     I tempo real, J tema escuro opcional; D ficha de produto não se aplica).
     Slogan: "Cada serviço sob controle, do início ao pagamento."
 
     Changelog:
+    v3.9: Livro v5.8 / Core v5.8: onde guardar os dados (regra 77: só no aparelho, padrão, ou na nuvem),
+          botão Compartilhar e "Compartilhe e ganhe" (regras 74 e 75), estrutura de pastas (regra 78).
     v3.8: lista de contratantes deixa de ser fixa em 3 lugares do código: uma lista única (Carlos Lima e
           João Carlos + qualquer contratante que já exista nos serviços) alimenta o filtro, o formulário
           de serviço e os botões "Resumo" dos relatórios.
@@ -84,7 +86,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Controle de Serviços Terceirizados | Fênix</title>
     <meta name="theme-color" content="#041273">
-    <meta name="fenix-livro" content="5.2">
+    <meta name="fenix-livro" content="5.8">
     <meta name="fenix-ficha" content="A,B,C,E,F,G,H,I,J">
     <script>(function(){ try { var t = localStorage.getItem('fenix_tema'); if (t === 'escuro' || t === 'claro') document.documentElement.setAttribute('data-tema', t); } catch (e) {} })();</script>
     <link rel="icon" type="image/png" href="data:image/png;base64,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">    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
@@ -377,7 +379,7 @@
                 </p>
             </div>
         </div>
-        <p class="text-center text-white/50 text-[10px] mt-4">Fênix Core · mesma conta do Fênix Ativos · v3.8</p>
+        <p class="text-center text-white/50 text-[10px] mt-4">Fênix Core · mesma conta do Fênix Ativos · v3.9</p>
     </div>
 </div>
 
@@ -393,7 +395,7 @@
             <div class="leading-tight">
                 <p class="text-white font-bold text-sm md:text-base flex items-center gap-2">
                     Controle de Serviços Terceirizados
-                    <a href="#" onclick="abrirModalSobre(); return false;" title="Versão instalada — clique pra ver o Changelog" id="headerVersaoBadge" class="text-white/70 text-[9px] font-bold border border-white/25 rounded-full px-1.5 py-0.5 leading-none hover:bg-white/10 hover:text-white">v3.8</a>
+                    <a href="#" onclick="abrirModalSobre(); return false;" title="Versão instalada — clique pra ver o Changelog" id="headerVersaoBadge" class="text-white/70 text-[9px] font-bold border border-white/25 rounded-full px-1.5 py-0.5 leading-none hover:bg-white/10 hover:text-white">v3.9</a>
                 </p>
                 <p class="text-white/50 text-[10px] hidden sm:block">Fênix Soluções Tecnológicas</p>
             </div>
@@ -668,7 +670,7 @@
                 <a href="https://wa.me/5579999680880" target="_blank" class="hover:text-slate-600">&lt;Cristiano Fênix/&gt;</a>
                 &nbsp;|&nbsp;
                 <a href="https://instagram.com/fenixsolucoestecnologicas" target="_blank" class="hover:text-slate-600 font-medium">© Fênix Soluções Tecnológicas</a>
-                &nbsp;·&nbsp; <span id="seloRodape">v3.8</span>
+                &nbsp;·&nbsp; <span id="seloRodape">v3.9</span>
                 &nbsp;·&nbsp; <a href="#" onclick="abrirModalSobre(); return false;" class="hover:text-slate-600 underline">Sobre</a>
             </p>
         </footer>
@@ -866,6 +868,7 @@
             <button type="button" onclick="fecharModalSobre()" aria-label="Fechar" class="text-slate-400 hover:text-slate-600 text-2xl leading-none min-w-[44px] min-h-[44px]">&times;</button>
         </div>
         <div id="areaSobre" class="p-3"></div>
+        <div id="areaCompartilhar" class="px-5 pb-3"></div>
         <p class="px-5 pb-4 text-[11px] text-slate-400">
             <a href="https://fenicris-dev.github.io/Fenix-Core/fenix-termos-de-uso.html" target="_blank" rel="noopener" class="underline">Termos de Uso</a>
             &nbsp;·&nbsp;
@@ -893,6 +896,7 @@
             <button type="button" onclick="fecharModalPreferencias()" aria-label="Fechar" class="text-slate-400 hover:text-slate-600 text-2xl leading-none min-w-[44px] min-h-[44px]">&times;</button>
         </div>
         <div id="areaPreferencias" class="p-3"></div>
+        <div id="areaArmazenamento" class="px-5 pb-4 text-xs"></div>
     </div>
 </div>
 
@@ -1376,7 +1380,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     let usuarioAtualFirebase = null;
     let vinculoUsuarioAtual = null;
     let infoSobreApp = null;
-    const VERSAO_APP = 'v3.8';
+    const VERSAO_APP = 'v3.9';
 
     function atualizarStatusConexao(estado) {
         const dot = document.getElementById('statusDot');
@@ -1386,6 +1390,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         const mapa = {
             conectado: { cor: 'bg-emerald-400', icone: '✓', label: 'Sincronizado', pulse: '', title: 'Conectado ao Fênix Core — dados sincronizados na nuvem' },
             sincronizando: { cor: 'bg-amber-400', icone: '⟳', label: 'Sincronizando...', pulse: ' animate-pulse', title: 'Sincronizando com o Fênix Core...' },
+            local: { cor: 'bg-slate-400', icone: '💾', label: 'Só no aparelho', pulse: '', title: 'Seus dados ficam só neste aparelho. Faça backup com frequência (Ajuda > Preferências > Onde guardar meus dados).' },
             offline: { cor: 'bg-rose-400', icone: '⏸', label: 'Sem conexão', pulse: '', title: 'Sem conexão com o Fênix Core — trabalhando só com os dados salvos neste aparelho; envia sozinho quando a internet voltar' },
             erro: { cor: 'bg-rose-500', icone: '⚠', label: 'Erro', pulse: '', title: 'Erro ao sincronizar com o Fênix Core — toque no número ao lado para tentar de novo' }
         };
@@ -1633,8 +1638,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             prepararAvatarConta(user, vinculo);
             atualizarStatusConexao('sincronizando');
             await carregarLicencaDoUsuario(user);
-            await migrarDadosLegados();
-            iniciarSincronia();
+            await iniciarArmazenamento();   // regra 77: pergunta no 1º acesso e liga ou desliga a nuvem
             entrarNoApp();
             if (!vinculo.onboardingConcluido) abrirModalOnboarding(vinculo);
         } catch (err) {
@@ -1684,6 +1688,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     }
 
     function recalcularEstadoSync() {
+        if (!syncObras && !syncClientes) { atualizarStatusConexao('local'); atualizarBadgeFila(); return; }
         const e = [estadoSyncObras, estadoSyncClientes];
         let est = 'conectado';
         if (e.includes('erro')) est = 'erro';
@@ -1776,6 +1781,89 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         localStorage.setItem(marca, new Date().toISOString());
         marcarNaNuvem();
         try { localStorage.removeItem(CHAVE_FILA); } catch (e) {}
+    }
+
+    // ===================== ONDE GUARDAR OS DADOS (v3.9, regra 77) =====================
+    // Padrão: só neste aparelho. Na nuvem só se o usuário escolher. Quem já usava a nuvem (marca da
+    // migração neste aparelho) continua nela até responder a pergunta, que aparece uma única vez.
+    const NOME_EXIBICAO_APP = 'Controle de Serviços Terceirizados';
+    async function iniciarArmazenamento() {
+        let modo = 'nuvem';
+        let jaUsavaNuvem = false;
+        try { jaUsavaNuvem = !!localStorage.getItem(CHAVE_MIGRACAO_SYNC + ':' + empresaAtual); } catch (e) {}
+        try {
+            modo = await FenixCore.armazenamento.iniciar({
+                app: NOME_APP, nomeApp: NOME_EXIBICAO_APP, temNuvem: true,
+                modoAtual: jaUsavaNuvem ? 'nuvem' : undefined,
+                container: '#areaArmazenamento',
+                aoMudar: (novo) => aplicarModoArmazenamento(novo, true)
+            });
+        } catch (e) {
+            console.warn('FenixCore.armazenamento:', e);
+            try { modo = FenixCore.armazenamento.modo(NOME_APP); } catch (x) { modo = 'local'; }
+        }
+        await aplicarModoArmazenamento(modo, false);
+    }
+    async function aplicarModoArmazenamento(modo, enviarLocal) {
+        if (modo === 'nuvem') {
+            if (!syncObras || !syncClientes) {
+                await migrarDadosLegados();
+                iniciarSincronia();
+            }
+            if (enviarLocal) { // veio de "só no aparelho": envia o que está aqui para a nuvem
+                try { await Promise.all([syncObras.importarLista(obras), syncClientes.importarLista(clientes)]); }
+                catch (err) { console.error(err); avisar('Os dados serão enviados para a nuvem quando a conexão voltar.', 'erro'); }
+            }
+        } else {
+            pararSincronia();
+            semearClientesLocal();
+            atualizarStatusConexao('local');
+            atualizarBadgeFila();
+        }
+    }
+    // 1ª vez neste aparelho sem nuvem: começa com a lista de clientes padrão (como na versão 3.5)
+    function semearClientesLocal() {
+        try {
+            if (clientes.length === 0 && !localStorage.getItem('servicos_terceirizados_semeado')) {
+                clientes = clientesPadrao.slice();
+                salvarLocalStorage();
+            }
+            localStorage.setItem('servicos_terceirizados_semeado', '1');
+        } catch (e) {}
+    }
+    // Backup importado: na nuvem vai pela sincronia; só no aparelho, mescla na lista local.
+    async function importarListas(obrasNovas, clientesNovos) {
+        if (syncObras && syncClientes) {
+            await Promise.all([syncObras.importarLista(obrasNovas), syncClientes.importarLista(clientesNovos)]);
+            return;
+        }
+        const mescla = (atual, novos) => { const m = new Map(novos.map(r => [String(r.id), r])); return atual.filter(x => !m.has(String(x.id))).concat(Array.from(m.values())); };
+        obras = mescla(obras, obrasNovas);
+        clientes = mescla(clientes, clientesNovos);
+        salvarLocalStorage();
+    }
+
+    // ===================== COMPARTILHAR (v3.9, regras 74 e 75) =====================
+    // Se o endereço publicado do app for outro, preencha aqui (ex.: 'https://fenicris-dev.github.io/Fenix-Controle-de-Servicos/').
+    const URL_APP_PUBLICADO = '';
+    function urlPublicadaApp() {
+        if (URL_APP_PUBLICADO) return URL_APP_PUBLICADO;
+        try {
+            if (location.protocol.indexOf('http') !== 0) return undefined;
+            let u = location.origin + location.pathname;
+            u = u.replace(/\/fenix-[a-z0-9-]*?(-v\d+\.\d+)?\.html$/i, '/'); // nunca o arquivo com versão no nome
+            return u;
+        } catch (e) { return undefined; }
+    }
+    function iniciarCompartilhar() {
+        try {
+            FenixCore.compartilhar.iniciar({
+                nomeApp: NOME_EXIBICAO_APP,
+                url: urlPublicadaApp(),
+                email: usuarioAtualFirebase && usuarioAtualFirebase.email ? usuarioAtualFirebase.email : undefined,
+                container: '#areaCompartilhar'
+            });
+        } catch (e) { console.error('FenixCore.compartilhar:', e); }
     }
 
     function iniciarSincronia() {
@@ -1888,7 +1976,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     function entrarNoApp() {
         document.getElementById('appRoot').classList.remove('hidden');
-        document.getElementById('headerVersaoBadge').innerText = (FenixCore && FenixCore.versoes) ? FenixCore.versoes.selo('3.8') : VERSAO_APP;
+        document.getElementById('headerVersaoBadge').innerText = (FenixCore && FenixCore.versoes) ? FenixCore.versoes.selo('3.9') : VERSAO_APP;
         salvarLocalStorage();
         atualizarBadgeFila();
         mudarView('dashboard');
@@ -1898,7 +1986,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if (coreDisponivel && FenixCore) {
             try { infoSobreApp = FenixCore.sobre.registrarAcesso(NOME_APP, VERSAO_APP); }
             catch (e) { console.error('FenixCore.sobre:', e); }
-            try { FenixCore.versoes.montarSelo('#seloRodape', '3.8', { coreMinimo: '5.2', livro: '5.2' }); }
+            iniciarCompartilhar();
+            try { FenixCore.versoes.montarSelo('#seloRodape', '3.9', { coreMinimo: '5.5', livro: '5.8' }); }
             catch (e) { console.error('FenixCore.versoes:', e); }
             try {
                 FenixCore.backup.verificarLembrete(NOME_APP, {
@@ -1935,6 +2024,17 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 
     // Changelog (regra 13): datas das versões antigas aproximadas pelo histórico das conversas
     const CHANGELOG_APP = [
+        {
+            "versao": "3.9",
+            "criadaEm": "2026-11-11",
+            "modificadaEm": "2026-11-11",
+            "mudancas": [
+                "Padrão do Livro das Regras v5.8 e do Fênix Core v5.8. Ficha de aplicação: A, B, C, E, F, G, H, I, J (mais as regras 74, 75, 77 e 78, que valem sempre).",
+                "Onde guardar os dados (regra 77): no primeiro acesso o app pergunta se os dados ficam só neste aparelho (padrão) ou na nuvem da Fênix. Quem já usava a nuvem continua nela até responder (a pergunta aparece uma vez). Dá para mudar depois em Preferências > Onde guardar meus dados; ao ir para a nuvem os dados do aparelho são enviados. Só no aparelho, formatar, limpar os dados do navegador ou desinstalar apaga tudo: faça backup.",
+                "Botão Compartilhar na tela Sobre (WhatsApp, e-mail, copiar link e opções do aparelho) e aviso \"Compartilhe e ganhe\" quando a campanha estiver ligada (regras 74 e 75).",
+                "Selo de versão agora \"v3.9 | c 5.8\"; estrutura de pastas do pacote conforme a regra 78."
+            ]
+        },
         {
             "versao": "3.8",
             "criadaEm": "2026-11-06",
@@ -2084,7 +2184,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             ]
         }
     ];
-    const MANUAL_MD = "# Controle de Serviços Terceirizados\n\nCada serviço sob controle, do início ao pagamento.\n\n## Primeiros passos\n1. Entre com o seu **e-mail e senha** (ou com o Google, se a sua licença for definitiva).\n2. No primeiro acesso, informe o seu primeiro nome e, se quiser, o CNPJ.\n3. O ponto colorido no topo mostra a conexão: verde = sincronizado, amarelo = sincronizando, vermelho = sem conexão (tudo continua salvo neste aparelho).\n\n## Serviços\n- Toque em **+ Novo Serviço** para cadastrar contratante, cliente, local, escopo, datas e valores.\n- Toque no código do serviço para ver o relatório; em **Dias** você lança cada dia de atendimento.\n- **Atendimentos** = quantidade de dias distintos trabalhados, não o período corrido entre início e fim.\n- **Status** alterna Em Andamento, Concluído e Interrompido.\n- O pagamento pode ser Pendente, Parcial (com valor pago) ou Pago; o saldo devedor é calculado sozinho.\n\n## Clientes\n- Em **Clientes**, escolha **Pessoa Jurídica (CNPJ)** ou **Pessoa Física (CPF)**. O documento é conferido na hora; se for válido, o app busca os dados sozinho (CNPJ na Receita) e você só confere.\n- Digite o **CEP** para preencher rua, bairro, cidade e UF. Só falta o número.\n- O documento é opcional: cliente sem CPF/CNPJ continua valendo, mas não vai para o cadastro central. Não é possível repetir o mesmo documento nem o mesmo nome.\n- Toque em um cliente para ver o histórico, **Editar** ou **Excluir**. Para excluir é preciso digitar APAGAR.\n- Mudar o nome do cliente atualiza os serviços já lançados para ele.\n\n## Relatórios e PDF\n- Em **Relatórios**, gere o relatório que quiser (ou toque no código de um serviço) e use **Baixar PDF**. O arquivo é gerado no próprio aparelho, sem internet. **Imprimir** continua disponível.\n\n## Dashboard\n- Os cartões de contagem são clicáveis: levam direto à lista de serviços filtrada por aquele número.\n\n## Mais de um aparelho\n- Quem entra com a mesma empresa em outro aparelho vê as mudanças na hora. Se dois aparelhos mudarem o mesmo registro, vale a alteração mais recente. Se alguém alterar, em outro aparelho, o serviço ou cliente que você está editando, aparece um aviso antes de você salvar por cima.\n- Sem internet você continua trabalhando; ao voltar a conexão, tudo é enviado sozinho.\n\n## Seus dados\n- **Exportar meus dados** baixa um backup em JSON; **Importar** restaura um backup.\n- Em **Preferências** você escolhe som, animações reduzidas e o tema claro, escuro ou automático.\n- **Excluir minha conta** apaga o seu acesso. Os serviços e clientes da empresa continuam na empresa.\n\n## Licença\n- O teste dura 15 dias. Depois dele o app abre em **somente leitura** (você consulta, mas não altera) até a licença ser adquirida.\n- Dúvidas: WhatsApp (79) 9 9968-0880.\n";
+    const MANUAL_MD = "# Controle de Serviços Terceirizados\n\nCada serviço sob controle, do início ao pagamento.\n\n## Primeiros passos\n1. Entre com o seu **e-mail e senha** (ou com o Google, se a sua licença for definitiva).\n2. No primeiro acesso, informe o seu primeiro nome e, se quiser, o CNPJ.\n3. O ponto colorido no topo mostra a conexão: verde = sincronizado, amarelo = sincronizando, vermelho = sem conexão (tudo continua salvo neste aparelho), cinza = dados só neste aparelho.\n\n## Serviços\n- Toque em **+ Novo Serviço** para cadastrar contratante, cliente, local, escopo, datas e valores.\n- Toque no código do serviço para ver o relatório; em **Dias** você lança cada dia de atendimento.\n- **Atendimentos** = quantidade de dias distintos trabalhados, não o período corrido entre início e fim.\n- **Status** alterna Em Andamento, Concluído e Interrompido.\n- O pagamento pode ser Pendente, Parcial (com valor pago) ou Pago; o saldo devedor é calculado sozinho.\n\n## Clientes\n- Em **Clientes**, escolha **Pessoa Jurídica (CNPJ)** ou **Pessoa Física (CPF)**. O documento é conferido na hora; se for válido, o app busca os dados sozinho (CNPJ na Receita) e você só confere.\n- Digite o **CEP** para preencher rua, bairro, cidade e UF. Só falta o número.\n- O documento é opcional: cliente sem CPF/CNPJ continua valendo, mas não vai para o cadastro central. Não é possível repetir o mesmo documento nem o mesmo nome.\n- Toque em um cliente para ver o histórico, **Editar** ou **Excluir**. Para excluir é preciso digitar APAGAR.\n- Mudar o nome do cliente atualiza os serviços já lançados para ele.\n\n## Onde guardar meus dados\n- No primeiro acesso o app pergunta: **Só neste aparelho** (padrão) ou **Na nuvem da Fênix**. A janela só fecha quando você responde.\n- **Só neste aparelho:** os dados não saem daqui. Se você formatar o aparelho, limpar o histórico ou os dados do navegador, ou desinstalar o app, **perde tudo**. Use **Exportar backup** com frequência.\n- **Na nuvem:** os dados acompanham a sua conta e aparecem em outros aparelhos.\n- Para mudar depois: **Preferências > Onde guardar meus dados > Alterar**. Ao ir para a nuvem, o que está no aparelho é enviado. Ao voltar para o aparelho, a sincronização é desligada e o que você registrar dali em diante fica só nele.\n- A escolha vale por aparelho. Em outro aparelho a pergunta aparece de novo. O login e a licença não mudam com essa escolha.\n\n## Compartilhar\n- Em **Sobre**, toque em **Compartilhar** para indicar o app por WhatsApp, e-mail, copiando o link ou pelas opções do aparelho. O app nunca lê os seus contatos.\n- Quando a campanha **Compartilhe e ganhe** estiver ligada, aparece um aviso ao abrir o app com as condições. O prêmio é de 1 ano de acesso a um dos aplicativos da lista, só depois que a pessoa indicada contratar a licença; nunca é em dinheiro.\n\n## Relatórios e PDF\n- Em **Relatórios**, gere o relatório que quiser (ou toque no código de um serviço) e use **Baixar PDF**. O arquivo é gerado no próprio aparelho, sem internet. **Imprimir** continua disponível.\n\n## Dashboard\n- Os cartões de contagem são clicáveis: levam direto à lista de serviços filtrada por aquele número.\n\n## Mais de um aparelho\n- Quem entra com a mesma empresa em outro aparelho vê as mudanças na hora. Se dois aparelhos mudarem o mesmo registro, vale a alteração mais recente. Se alguém alterar, em outro aparelho, o serviço ou cliente que você está editando, aparece um aviso antes de você salvar por cima.\n- Sem internet você continua trabalhando; ao voltar a conexão, tudo é enviado sozinho.\n\n## Seus dados\n- **Exportar meus dados** baixa um backup em JSON; **Importar** restaura um backup.\n- Em **Preferências** você escolhe som, animações reduzidas e o tema claro, escuro ou automático.\n- **Excluir minha conta** apaga o seu acesso. Os serviços e clientes da empresa continuam na empresa.\n\n## Licença\n- O teste dura 15 dias. Depois dele o app abre em **somente leitura** (você consulta, mas não altera) até a licença ser adquirida.\n- Dúvidas: WhatsApp (79) 9 9968-0880.\n";
 
     // ===================== SOBRE / MANUAL / PREFERÊNCIAS / EXCLUIR CONTA =====================
 
@@ -2095,8 +2195,8 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
         if (coreDisponivel && FenixCore) {
             try {
                 FenixCore.sobre.montarTela('#areaSobre', {
-                    nomeApp: NOME_APP, titulo: 'Controle de Serviços Terceirizados', versao: '3.8',
-                    changelog: CHANGELOG_APP, livro: '5.2', coreMinimo: '5.2'
+                    nomeApp: NOME_APP, titulo: 'Controle de Serviços Terceirizados', versao: '3.9',
+                    changelog: CHANGELOG_APP, livro: '5.8', coreMinimo: '5.5'
                 });
             } catch (e) { console.error('sobre.montarTela:', e); }
         } else {
@@ -2109,7 +2209,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     function abrirModalManual() {
         if (coreDisponivel && FenixCore) {
             try {
-                FenixCore.manual.montarTela('#areaManual', MANUAL_MD, { nomeApp: NOME_APP, versao: '3.8', titulo: 'Controle de Serviços Terceirizados' });
+                FenixCore.manual.montarTela('#areaManual', MANUAL_MD, { nomeApp: NOME_APP, versao: '3.9', titulo: 'Controle de Serviços Terceirizados' });
             } catch (e) { console.error('manual.montarTela:', e); }
         } else {
             document.getElementById('areaManual').innerText = 'Abra o app com internet para ver o manual.';
@@ -2155,7 +2255,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
             avisar('Sua conta foi excluída.');
         } catch (err) {
             console.error(err);
-            if (empresaAtual) iniciarSincronia();
+            if (empresaAtual && FenixCore.armazenamento.nuvem(NOME_APP)) iniciarSincronia();
             erro.textContent = (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password')
                 ? 'Senha incorreta.'
                 : 'Não foi possível excluir agora. Código: ' + (err.code || 'desconhecido');
@@ -2358,7 +2458,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     avisar('⚠️ Arquivo de backup inválido.', 'erro');
                     return;
                 }
-                if (!syncObras || !syncClientes) {
+                if (!usuarioAtualFirebase) {
                     avisar('⚠️ Entre na sua conta para importar um backup.', 'erro');
                     return;
                 }
@@ -2372,7 +2472,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
                     `Importar ${obrasOk.length} serviço(s) e ${clientesOk.length} cliente(s)? Itens com o mesmo código serão substituídos pelos do arquivo; o restante é mantido.`,
                     { textoSair: 'Importar', textoFicar: 'Cancelar' });
                 if (!seguir) return;
-                await Promise.all([syncObras.importarLista(obrasOk), syncClientes.importarLista(clientesOk)]);
+                await importarListas(obrasOk, clientesOk);
                 redesenharTelaAtual();
                 avisar('✅ Backup importado.' + (ignorados ? ` ${ignorados} item(ns) inválido(s) foram ignorados.` : ''));
             } catch (err) {
